@@ -351,6 +351,7 @@ footer p { max-width: 60ch; }
           <div class="tabs" role="tablist" aria-label="Your computer">
             <button role="tab" id="tab-win" aria-selected="true" aria-controls="steps-win">Windows</button>
             <button role="tab" id="tab-mac" aria-selected="false" aria-controls="steps-mac">Mac</button>
+            <button role="tab" id="tab-nml" aria-selected="false" aria-controls="steps-nml">NeoModLoader</button>
           </div>
           <ol class="steps" id="steps-win" role="tabpanel" aria-labelledby="tab-win">
             <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>.</span></li>
@@ -366,6 +367,13 @@ footer p { max-width: 60ch; }
             <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
             <li><span>Restart WorldBox.</span></li>
           </ol>
+          <ol class="steps" id="steps-nml" role="tabpanel" aria-labelledby="tab-nml" hidden>
+            <li><span>Already play with NeoModLoader (PC or Android)? Download <b>Worldfall_NML.zip</b> instead.</span></li>
+            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>, and open the <code>Mods</code> folder NeoModLoader made.</span></li>
+            <li><span>Drop the zip in there (NeoModLoader unpacks it), or put the <code>Worldfall</code> folder from it there.</span></li>
+            <li><span>Start WorldBox. The first start takes a moment longer while NeoModLoader sets it up.</span></li>
+            <li><span>Use one install, not both: if <code>Worldfall.dll</code> is also in <code>StreamingAssets/mods</code>, that one runs instead.</span></li>
+          </ol>
           <div class="safe">
             <p class="eyebrow">Is it safe?</p>
             <ul>
@@ -375,13 +383,15 @@ footer p { max-width: 60ch; }
               <li><b>Check your download.</b> Compare its SHA-256 with these (Windows: <code>certutil -hashfile Worldfall.zip SHA256</code>), or scan it on virustotal.com.</li>
             </ul>
             <dl class="hashes">
-              <dt>Worldfall.zip</dt><dd><code>c25335bd6a33f5ae3ea8ec0937dd7a4fea1ac80b873a01b5d911ae65fd06aa6e</code></dd>
-              <dt>Worldfall.dll</dt><dd><code>e997664168635491adc52866cc15ef48999cbecd747d296bc10467ae3f9a40a5</code></dd>
+              <dt>Worldfall.zip</dt><dd><code>15c4004e0338bcfd9cbec3bf3ee6a3892e41700158820dd50e978fbacefb18d0</code></dd>
+              <dt>Worldfall_NML.zip</dt><dd><code>ac061f0af809097540bfb40abdf068eca5481a65eb92979ee101b22825655c6a</code></dd>
+              <dt>Worldfall.dll</dt><dd><code>8f0c6055ede30177ea1fdba9f71b2ecaf1ad3cc3fc12ae6e2820399ab5312333</code></dd>
             </dl>
           </div>
           <p class="note">This is a beta build, so you may run into bugs; reports on Discord help. WorldBox also turns Experimental Mode off after every game update: if the mod stops loading, turn it back on and restart.</p>
           <div class="ctas">
-            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download the beta (Worldfall.zip, 48 MB)</a>
+            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download the beta (Worldfall.zip, 47 MB)</a>
+            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 47 MB)</a>
             <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
           </div>
         </div>
@@ -807,8 +817,8 @@ footer p { max-width: 60ch; }
   setHour();
 
   // ---- install tabs ----
-  var tabs = [document.getElementById("tab-win"), document.getElementById("tab-mac")];
-  var panels = [document.getElementById("steps-win"), document.getElementById("steps-mac")];
+  var tabs = [document.getElementById("tab-win"), document.getElementById("tab-mac"), document.getElementById("tab-nml")];
+  var panels = [document.getElementById("steps-win"), document.getElementById("steps-mac"), document.getElementById("steps-nml")];
   function pick(k) {
     tabs.forEach(function (t, j) { t.setAttribute("aria-selected", j === k ? "true" : "false"); t.tabIndex = j === k ? 0 : -1; });
     panels.forEach(function (p, j) { p.hidden = j !== k; });
@@ -816,7 +826,7 @@ footer p { max-width: 60ch; }
   tabs.forEach(function (t, k) {
     t.addEventListener("click", function () { pick(k); });
     t.addEventListener("keydown", function (e) {
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { var j = (k + 1) % 2; pick(j); tabs[j].focus(); }
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { var j = (k + (e.key === "ArrowRight" ? 1 : 2)) % 3; pick(j); tabs[j].focus(); }
     });
   });
   if (/Mac/.test(navigator.platform || "")) pick(1); else pick(0);
