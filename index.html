@@ -265,6 +265,7 @@ footer p { max-width: 60ch; }
   .mosaic .big .shot img { aspect-ratio: 16 / 9; }
   .trio { grid-template-columns: minmax(0, 1fr); }
   .bar nav a:not(.keep) { display: none; }
+  .bar .wide-only { display: none; }
   .strip { grid-auto-columns: minmax(240px, 72%); }
 }
 @media (max-width: 560px) {
@@ -302,6 +303,7 @@ footer p { max-width: 60ch; }
   <div class="bar-links">
     <a class="btn ghost" href="https://discord.gg/KNE9Bd9j" target="_blank" rel="noopener">Discord</a>
     <a class="btn ghost" href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener">TikTok</a>
+    <a class="btn ghost wide-only" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>
     <a class="btn" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Ko-fi</a>
   </div>
 </header>
@@ -368,10 +370,11 @@ footer p { max-width: 60ch; }
             <li><span>Restart WorldBox.</span></li>
           </ol>
           <ol class="steps" id="steps-nml" role="tabpanel" aria-labelledby="tab-nml" hidden>
-            <li><span>Already play with NeoModLoader (PC or Android)? Download <b>Worldfall_NML.zip</b> instead.</span></li>
+            <li><span>Already play with NeoModLoader? The easiest way: subscribe to Worldfall on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener"><b>Steam Workshop</b></a> (Steam asks to add NeoModLoader too), then start WorldBox.</span></li>
+            <li><span>Or download <b>Worldfall_NML.zip</b> (PC or Android).</span></li>
             <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>, and open the <code>Mods</code> folder NeoModLoader made.</span></li>
             <li><span>Drop the zip in there (NeoModLoader unpacks it), or put the <code>Worldfall</code> folder from it there.</span></li>
-            <li><span>Start WorldBox. The first start takes a moment longer while NeoModLoader sets it up.</span></li>
+            <li><span>Start WorldBox. Worldfall shows in NeoModLoader's mod list.</span></li>
             <li><span>Use one install, not both: if <code>Worldfall.dll</code> is also in <code>StreamingAssets/mods</code>, that one runs instead.</span></li>
           </ol>
           <div class="safe">
@@ -384,7 +387,7 @@ footer p { max-width: 60ch; }
             </ul>
             <dl class="hashes">
               <dt>Worldfall.zip</dt><dd><code>15c4004e0338bcfd9cbec3bf3ee6a3892e41700158820dd50e978fbacefb18d0</code></dd>
-              <dt>Worldfall_NML.zip</dt><dd><code>ac061f0af809097540bfb40abdf068eca5481a65eb92979ee101b22825655c6a</code></dd>
+              <dt>Worldfall_NML.zip</dt><dd><code>1e4630043d8a921fc50c06797f4d5a3c98e0200f9a4c8d4c97ae1394c1a4d8ea</code></dd>
               <dt>Worldfall.dll</dt><dd><code>8f0c6055ede30177ea1fdba9f71b2ecaf1ad3cc3fc12ae6e2820399ab5312333</code></dd>
             </dl>
           </div>
@@ -392,6 +395,7 @@ footer p { max-width: 60ch; }
           <div class="ctas">
             <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download the beta (Worldfall.zip, 47 MB)</a>
             <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 47 MB)</a>
+            <a class="btn ghost" id="workshop" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop (NeoModLoader)</a>
             <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
           </div>
         </div>
