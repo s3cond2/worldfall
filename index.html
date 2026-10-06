@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Worldfall</title>
+<meta name="description" content="Worldfall is a first-person mod for WorldBox: zoom in on any creature and keep going, into its eyes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@500;700&family=Silkscreen&display=swap">
+<style>
+/* Layout: one long dive (a pinned screen that scroll scrubs from the whole map into a villager's eyes), then a
+   column of real screenshots on the night sea. One committed look: the map's ocean after dark, lit by the sun's gold. */
+:root {
+  --sea-deep: #0a1828;      /* the page: open ocean at night */
+  --sea: #10263c;           /* raised panels */
+  --sea-lift: #183a5a;      /* borders, tracks */
+  --foam: #eef2e8;          /* text */
+  --mist: #9fb5c0;          /* quiet text */
+  --sun: #ffc54a;           /* the one accent: golden-hour sun */
+  --grass: #8cd457;         /* small live markers */
+  --shade: rgba(5, 12, 20, 0.72);
+  --line: rgba(238, 242, 232, 0.13);
+
+  --display: "Pixelify Sans", "Courier New", monospace;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --pixel: "Silkscreen", "Courier New", monospace;
+
+  --step--1: 0.84rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3rem;
+  --step-2: clamp(1.6rem, 1.2rem + 1.6vw, 2.35rem);
+  --step-3: clamp(3.2rem, 1.6rem + 7.5vw, 7.5rem);
+  --gutter: clamp(16px, 4vw, 48px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body {
+  margin: 0;
+  background: var(--sea-deep);
+  color: var(--foam);
+  font: 400 var(--step-0)/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+a { color: var(--sun); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.05; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.eyebrow { font: 400 0.72rem/1.2 var(--pixel); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sun); }
+
+/* ---- top bar ---- */
+.bar {
+  position: fixed; inset: 0 0 auto 0; z-index: 20;
+  display: flex; align-items: center; gap: 20px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 14px;
+  background: linear-gradient(to bottom, rgba(5, 12, 20, 0.7), rgba(5, 12, 20, 0));
+}
+.mark { font: 700 1.15rem/1 var(--display); color: var(--foam); text-decoration: none; letter-spacing: 0.04em; }
+.tag-alpha {
+  display: inline-block; vertical-align: 2px; margin-left: 6px;
+  font: 400 0.58rem/1 var(--pixel); letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 6px 3px; border-radius: 3px; background: var(--sun); color: #1d1405;
+}
+.bar nav { display: flex; gap: 18px; margin-left: auto; }
+.bar nav a { color: var(--foam); text-decoration: none; font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.06em; opacity: 0.85; }
+.bar nav a:hover { opacity: 1; color: var(--sun); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 700 0.95rem/1 var(--body); text-decoration: none;
+  padding: 11px 16px; border-radius: 4px;
+  background: var(--sun); color: #1d1405;
+  box-shadow: 0 3px 0 #9a6a10;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #9a6a10; }
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #9a6a10; }
+.btn.ghost { background: transparent; color: var(--foam); box-shadow: inset 0 0 0 2px var(--line); }
+.bar .btn { padding: 9px 13px; font-size: 0.85rem; }
+.bar-links { display: flex; gap: 8px; flex: none; }
+.mark { min-width: 0; white-space: nowrap; overflow: hidden; }
+
+/* ---- the dive ---- */
+.dive { position: relative; height: 420vh; }
+.screen { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #0d2a47; }
+.screen .poster, .screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.screen .poster { object-fit: cover; }
+.scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(5, 12, 20, 0.78) 0%, rgba(5, 12, 20, 0) 38%),
+    linear-gradient(to right, rgba(5, 12, 20, 0.55) 0%, rgba(5, 12, 20, 0) 45%);
+}
+.intro {
+  position: absolute; left: var(--gutter); bottom: clamp(96px, 16vh, 170px);
+  max-width: min(36rem, calc(100% - 2 * var(--gutter)));
+  display: grid; gap: 14px;
+  will-change: opacity, transform;
+}
+.intro h1 { font-size: var(--step-3); letter-spacing: 0.01em; color: var(--foam); text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35); }
+.intro .lede { font-size: var(--step-1); line-height: 1.45; color: var(--foam); max-width: 30rem; }
+.wip {
+  justify-self: start; display: inline-flex; align-items: center; gap: 10px; max-width: 100%;
+  font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.06em; color: var(--foam);
+  padding: 8px 12px 7px; border-radius: 3px; background: var(--shade); border: 1px solid var(--line);
+}
+.pulse { width: 8px; height: 8px; background: var(--grass); animation: blink 1.4s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.hint { display: flex; align-items: center; gap: 12px; font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.06em; color: var(--mist); margin-top: 6px; }
+.wheel { width: 18px; height: 28px; border: 2px solid var(--mist); border-radius: 9px; position: relative; flex: none; }
+.wheel::after { content: ""; position: absolute; left: 50%; top: 5px; width: 2px; height: 6px; margin-left: -1px; background: var(--sun); animation: roll 1.6s ease-in-out infinite; }
+@keyframes roll { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(9px); opacity: 0; } 100% { opacity: 0; } }
+
+.stops {
+  list-style: none; margin: 0; padding: 0;
+  position: absolute; left: var(--gutter); bottom: clamp(28px, 6vh, 56px);
+  width: min(25rem, calc(100% - 2 * var(--gutter)));
+  display: grid; gap: 4px;
+  opacity: 0; transition: opacity 0.4s;
+}
+.stops.on { opacity: 1; }
+.stops li { display: grid; grid-template-columns: 26px 1fr; gap: 0 12px; align-items: baseline; color: var(--mist); }
+.stops .n { font: 400 0.7rem/1 var(--pixel); color: var(--mist); }
+.stops b { font: 700 1rem/1.3 var(--display); letter-spacing: 0.02em; }
+.stops p { grid-column: 2; font-size: 0.98rem; line-height: 1.5; color: var(--foam); max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s, opacity 0.4s; }
+.stops li.now { color: var(--foam); }
+.stops li.now .n { color: var(--sun); }
+.stops li.now b { color: var(--sun); font-size: 1.35rem; }
+.stops li.now p { max-height: 7em; opacity: 1; margin: 2px 0 8px; }
+.stops li.done { color: rgba(159, 181, 192, 0.6); }
+
+.readout {
+  position: absolute; right: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 76px);
+  display: grid; grid-template-columns: auto auto; gap: 6px 14px; align-items: center;
+  padding: 12px 14px; border-radius: 6px;
+  background: var(--shade); border: 1px solid var(--line);
+  font: 400 0.68rem/1.2 var(--pixel); letter-spacing: 0.05em; color: var(--mist);
+  font-variant-numeric: tabular-nums;
+}
+.readout .v { font: 500 1.25rem/1 var(--display); color: var(--foam); text-align: right; min-width: 5.5ch; }
+.readout .alt { grid-column: 1 / -1; height: 6px; background: var(--sea-lift); border-radius: 3px; overflow: hidden; }
+.readout .alt i { display: block; height: 100%; width: 100%; background: var(--sun); transform-origin: left; }
+.readout .src { grid-column: 1 / -1; color: var(--mist); font-size: 0.6rem; }
+.readout .live { display: inline-block; width: 7px; height: 7px; background: var(--grass); margin-right: 6px; vertical-align: 1px; }
+.loading { position: absolute; right: var(--gutter); bottom: 22px; font: 400 0.62rem/1 var(--pixel); color: var(--mist); letter-spacing: 0.05em; transition: opacity 0.6s; }
+.loading.done { opacity: 0; }
+
+/* ---- sections ---- */
+.wrap { width: min(1180px, 100%); margin: 0 auto; padding-inline: var(--gutter); }
+.band { padding-block: clamp(72px, 12vh, 140px); }
+.band + .band { border-top: 1px solid var(--line); }
+#install { padding-top: clamp(56px, 9vh, 96px); }
+.head { display: grid; gap: 14px; max-width: 40rem; margin-bottom: clamp(28px, 5vh, 44px); }
+.head h2 { font-size: var(--step-2); }
+.head p { color: var(--mist); font-size: var(--step-0); max-width: 62ch; }
+kbd { font: 400 0.72em/1 var(--pixel); padding: 3px 6px 2px; border-radius: 3px; background: var(--sea-lift); color: var(--foam); border-bottom: 2px solid #0a1828; white-space: nowrap; }
+.shot { border-radius: 6px; overflow: hidden; background: var(--sea); border: 1px solid var(--line); }
+.shot img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+figcaption { font-size: var(--step--1); color: var(--mist); margin-top: 10px; }
+
+/* compare: flat map / 3D */
+.cmp { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); --pos: 50%; user-select: none; }
+.cmp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cmp .top { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.cmp .rule { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 3px; margin-left: -1.5px; background: var(--sun); pointer-events: none; }
+.cmp .rule::after { content: ""; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; background: var(--sun); clip-path: polygon(0 50%, 30% 20%, 30% 40%, 70% 40%, 70% 20%, 100% 50%, 70% 80%, 70% 60%, 30% 60%, 30% 80%); }
+.cmp .tag { position: absolute; top: 14px; font: 400 0.66rem/1 var(--pixel); letter-spacing: 0.05em; padding: 7px 9px; background: var(--shade); color: var(--foam); border-radius: 3px; pointer-events: none; }
+.cmp .tag.l { left: 14px; }
+.cmp .tag.r { right: 14px; }
+.cmp input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.cmp:has(input:focus-visible) { outline: 3px solid var(--sun); outline-offset: 3px; }
+
+/* the hour */
+.hours { display: grid; gap: 16px; }
+.hours .stack { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--sea); }
+.hours .stack img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dial { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; padding-top: 26px; }
+.dial input { position: absolute; left: 0; right: 0; top: 0; width: 100%; margin: 0; accent-color: var(--sun); }
+.dial span { font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); }
+.dial span:nth-child(3) { text-align: center; }
+.dial span:nth-child(4) { text-align: right; }
+.dial span.now { color: var(--sun); }
+
+/* what you do in there */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 30px); }
+.grid figure { margin: 0; display: grid; gap: 12px; align-content: start; }
+.grid h3 { font-size: 1.2rem; letter-spacing: 0.01em; }
+.grid figcaption { margin: 0; display: grid; gap: 6px; }
+.grid figcaption p { color: var(--mist); font-size: 0.98rem; }
+
+/* dragons: one big picture and two beside it */
+.mosaic { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: clamp(14px, 2vw, 24px); }
+.mosaic figure { margin: 0; display: grid; grid-template-rows: 1fr auto; }
+.mosaic .big { grid-row: span 2; }
+.mosaic .big .shot { height: 100%; }
+.mosaic .big .shot img { height: 100%; aspect-ratio: auto; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
+.trio figure, .pair.even figure { margin: 0; }
+.wide { margin: 0; }
+.pair.even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sky { margin-top: clamp(28px, 4vw, 44px); }
+.wip-band { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: start; }
+.wip-band .head { margin-bottom: 0; }
+.safe { margin-top: 26px; padding: 18px 18px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
+.safe ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 10px; font-size: 0.97rem; color: var(--mist); }
+.safe li b { color: var(--foam); }
+.hashes { margin: 14px 0 0; display: grid; gap: 4px; font-size: 0.8rem; }
+.hashes dt { color: var(--foam); font-weight: 700; }
+.hashes dd { margin: 0 0 6px; }
+.hashes code { overflow-wrap: anywhere; word-break: break-all; }
+.note.change { margin-top: 6px; color: var(--foam); }
+.lately { list-style: none; margin: 14px 0 0; padding: 0; display: grid; }
+.lately li { padding: 12px 0 12px 22px; border-top: 1px solid var(--line); position: relative; color: var(--foam); }
+.lately li::before { content: ""; position: absolute; left: 0; top: 1.15em; width: 8px; height: 8px; background: var(--grass); }
+
+/* where to follow it */
+.follow-label { margin-top: 10px; }
+.socials { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.socials a {
+  display: grid; gap: 4px; padding: 12px 14px; border-radius: 4px; text-decoration: none;
+  background: var(--sea); border: 1px solid var(--line); color: var(--foam);
+}
+.socials a:hover { border-color: var(--sun); }
+.socials b { font: 700 1rem/1.1 var(--display); letter-spacing: 0.02em; }
+.socials span { font-size: 0.9rem; color: var(--mist); overflow-wrap: anywhere; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.foot-links a { font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); text-decoration: none; }
+.foot-links a:hover { color: var(--sun); }
+
+/* horizons */
+.pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(18px, 2.4vw, 30px); align-items: start; }
+.pair figure { margin: 0; }
+
+/* biomes */
+.strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 30%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; scrollbar-color: var(--sea-lift) transparent; }
+.strip figure { margin: 0; scroll-snap-align: start; }
+.strip figcaption { font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); margin-top: 10px; }
+
+/* install */
+.install { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
+.tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+.tabs button { font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.05em; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line); background: transparent; color: var(--mist); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--sea-lift); color: var(--foam); border-color: transparent; }
+.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: baseline; }
+.steps li::before { content: counter(s); font: 700 1.2rem/1 var(--display); color: var(--sun); }
+.steps code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: var(--sea); padding: 2px 6px; border-radius: 3px; overflow-wrap: anywhere; }
+.note { margin-top: 22px; padding: 14px 16px; border-left: 3px solid var(--sun); background: var(--sea); border-radius: 0 4px 4px 0; color: var(--mist); font-size: 0.97rem; }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.keys { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
+.keys th { text-align: left; font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); padding: 0 0 12px; }
+.keys td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: baseline; }
+.keys td:first-child { width: 8.5rem; padding-right: 12px; }
+
+footer { padding-block: 44px 64px; border-top: 1px solid var(--line); color: var(--mist); font-size: 0.92rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: center; }
+footer p { max-width: 60ch; }
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pair, .pair.even, .install, .wip-band, .mosaic { grid-template-columns: minmax(0, 1fr); }
+  .mosaic .big { grid-row: auto; }
+  .mosaic .big .shot img { aspect-ratio: 16 / 9; }
+  .trio { grid-template-columns: minmax(0, 1fr); }
+  .bar nav a:not(.keep) { display: none; }
+  .strip { grid-auto-columns: minmax(240px, 72%); }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .dive { height: 340vh; }
+  .readout { top: auto; bottom: 18px; right: 16px; padding: 9px 10px; grid-template-columns: auto auto; }
+  .readout .v { font-size: 1rem; }
+  .readout .src { display: none; }
+  .loading { right: auto; left: 16px; bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 64px); }
+  .stops { bottom: 92px; }
+  .stops li:not(.now) { display: none; }
+  .intro { bottom: 120px; }
+  .bar nav { display: none; }
+  .socials { grid-template-columns: minmax(0, 1fr); }
+  .bar { gap: 10px; }
+  .mark { font-size: 0.95rem; }
+  .bar-links { margin-left: auto; gap: 6px; }
+  .bar .btn { padding: 7px 8px; font-size: 0.74rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wheel::after, .pulse { animation: none; }
+  .stops, .stops p, .loading { transition: none; }
+  .btn:hover, .btn:active { transform: none; }
+}
+</style>
+
+<header class="bar">
+  <a class="mark" href="#dive">WORLDFALL <span class="tag-alpha">Beta</span></a>
+  <nav aria-label="Sections">
+    <a class="keep" href="#install">Install</a>
+    <a href="#dragons">Dragons</a>
+    <a href="#compare">3D map</a>
+    <a href="#inside">Inside</a>
+  </nav>
+  <div class="bar-links">
+    <a class="btn ghost" href="https://discord.gg/KNE9Bd9j" target="_blank" rel="noopener">Discord</a>
+    <a class="btn ghost" href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener">TikTok</a>
+    <a class="btn" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Ko-fi</a>
+  </div>
+</header>
+
+<main>
+  <section class="dive" id="dive" aria-labelledby="title">
+    <div class="screen">
+      <img class="poster" id="poster" src="frames/f000.webp" alt="A whole WorldBox map seen from above: an island of green land and pink blossom woods round a bay, in a blue sea." fetchpriority="high">
+      <canvas id="reel" aria-hidden="true"></canvas>
+      <div class="scrim"></div>
+
+      <div class="intro" id="intro">
+        <p class="eyebrow">A first-person mod for WorldBox</p>
+        <h1 id="title">Worldfall</h1>
+        <p class="wip"><span class="pulse" aria-hidden="true"></span>Beta · work in progress · new updates keep coming</p>
+        <p class="lede">Zoom in on anyone in your world and keep going, down through the trees and into their eyes.</p>
+        <p class="hint"><span class="wheel" aria-hidden="true"></span>Scroll to zoom in</p>
+      </div>
+
+      <ol class="stops" id="stops" aria-label="The dive, step by step">
+        <li><span class="n">1</span><b>The map</b><p>Your world, the way WorldBox draws it.</p></li>
+        <li><span class="n">2</span><b>The world rises</b><p>Below zoom 60 the flat map lifts into 3D, built live from the same world: every tree, roof and hill.</p></li>
+        <li><span class="n">3</span><b>The magnet</b><p>Close in and the view takes hold of the villager nearest the middle of the screen.</p></li>
+        <li><span class="n">4</span><b>Over their shoulder</b><p>The wheel keeps going past the map's closest zoom, following them as they walk.</p></li>
+        <li><span class="n">5</span><b>Into their eyes</b><p>One more turn and the camera swoops in. Mouse to look, WASD to walk, <kbd>G</kbd> to let go.</p></li>
+      </ol>
+
+      <div class="readout" aria-hidden="true">
+        <span class="k" id="rk">Map zoom</span><span class="v" id="rv">143.4</span>
+        <span class="alt"><i id="ralt"></i></span>
+        <span class="src"><span class="live"></span>In-game frame <span id="rf">1</span> of 475</span>
+      </div>
+      <p class="loading" id="loading">Loading frames <span id="lp">0</span>%</p>
+    </div>
+    <p class="visually-hidden">A scroll-driven sequence of real frames captured in WorldBox with Worldfall: the whole map, the camera closing in on a village as the flat map rises into 3D, the view locking onto a villager on the shore of a bay, and the dive into his eyes, ending in first person looking across the water and along the beach.</p>
+  </section>
+
+  <section class="band" id="install">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Free beta. No mod loader needed</p>
+        <h2>Install Worldfall</h2>
+        <p>One file in WorldBox's own mods folder. The mod is free; donations on Ko-fi are optional and don't unlock anything.</p>
+      </div>
+      <div class="install">
+        <div>
+          <div class="tabs" role="tablist" aria-label="Your computer">
+            <button role="tab" id="tab-win" aria-selected="true" aria-controls="steps-win">Windows</button>
+            <button role="tab" id="tab-mac" aria-selected="false" aria-controls="steps-mac">Mac</button>
+          </div>
+          <ol class="steps" id="steps-win" role="tabpanel" aria-labelledby="tab-win">
+            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>.</span></li>
+            <li><span>Open <code>worldbox_Data\StreamingAssets\mods</code> (make the <code>mods</code> folder if it isn't there).</span></li>
+            <li><span>Put <code>Worldfall.dll</code> in that folder.</span></li>
+            <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
+            <li><span>Restart WorldBox.</span></li>
+          </ol>
+          <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
+            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>.</span></li>
+            <li><span>Right-click the WorldBox app and choose <b>Show Package Contents</b>.</span></li>
+            <li><span>Go to <code>Contents/Resources/Data/StreamingAssets/mods</code> (make the <code>mods</code> folder if it isn't there) and put <code>Worldfall.dll</code> there.</span></li>
+            <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
+            <li><span>Restart WorldBox.</span></li>
+          </ol>
+          <div class="safe">
+            <p class="eyebrow">Is it safe?</p>
+            <ul>
+              <li><b>Only download it from this page.</b> The zip holds three files: <code>Worldfall.dll</code>, an install guide and the licence. No installer, no mod loader, no admin rights.</li>
+              <li><b>It never goes online.</b> The mod has no network code at all. It only runs inside WorldBox, and only writes its log, settings and screenshots to WorldBox's own save folder.</li>
+              <li><b>Why an antivirus might warn.</b> To turn WASD into first-person movement, the mod changes a few of WorldBox's own functions in memory while the game runs. Some antivirus tools flag that technique. Nothing on disk is changed: delete the DLL and the game is back to normal.</li>
+              <li><b>Check your download.</b> Compare its SHA-256 with these (Windows: <code>certutil -hashfile Worldfall.zip SHA256</code>), or scan it on virustotal.com.</li>
+            </ul>
+            <dl class="hashes">
+              <dt>Worldfall.zip</dt><dd><code>194d68ec4b16f98be2c935cce817cf5909dcaaf85777e6a8cdadf096b433290b</code></dd>
+              <dt>Worldfall.dll</dt><dd><code>10e2b8d7a340c5f7a31e253c8a9bce57dac984782c5ab208d11329f1cb32880d</code></dd>
+            </dl>
+          </div>
+          <p class="note">This is a beta build, so you may run into bugs; reports on Discord help. WorldBox also turns Experimental Mode off after every game update: if the mod stops loading, turn it back on and restart.</p>
+          <div class="ctas">
+            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download the beta (Worldfall.zip, 48 MB)</a>
+            <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
+          </div>
+        </div>
+        <div>
+          <table class="keys">
+            <thead><tr><th scope="col">Key</th><th scope="col">In first person</th></tr></thead>
+            <tbody>
+              <tr><td><kbd>G</kbd></td><td>Take control of the selected creature (and let go again)</td></tr>
+              <tr><td>Mouse, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Look around, walk or swim; hold <kbd>Shift</kbd> to sprint</td></tr>
+              <tr><td>Left click</td><td>Attack, or hold on a tree, rock or crop to chop, mine or harvest</td></tr>
+              <tr><td><kbd>E</kbd></td><td>Talk, go into a house, board a boat</td></tr>
+              <tr><td><kbd>X</kbd></td><td>Your kind's own ability</td></tr>
+              <tr><td><kbd>=</kbd></td><td>Leap into the creature under the crosshair</td></tr>
+              <tr><td><kbd>V</kbd></td><td>On the map: the 3D god view on or off</td></tr>
+              <tr><td><kbd>F1</kbd> <kbd>F2</kbd></td><td>All the controls; the mod's settings</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="wip">
+    <div class="wrap wip-band">
+      <div class="head">
+        <p class="eyebrow">Beta · work in progress</p>
+        <h2>Still being built</h2>
+        <p>Worldfall is in beta: an unfinished version that keeps getting updates with new creatures, places and things to do. Everything on this page is how it looks today. Expect bugs and rough edges, and expect it to keep changing.</p>
+        <p class="note change">All assets are subject to change: models, pictures, sounds and features may look and work differently in later updates.</p>
+        <p class="eyebrow follow-label">Follow along</p>
+        <ul class="socials">
+          <li><a href="https://discord.gg/KNE9Bd9j" target="_blank" rel="noopener"><b>Discord</b><span>Join the server</span></a></li>
+          <li><a href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener"><b>TikTok</b><span>@worldfall3d</span></a></li>
+          <li><a href="https://x.com/worldfall3d" target="_blank" rel="noopener"><b>X / Twitter</b><span>@worldfall3d</span></a></li>
+          <li><a href="https://www.reddit.com/r/worldfall3d/" target="_blank" rel="noopener"><b>Reddit</b><span>r/worldfall3d</span></a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="eyebrow">Added lately</p>
+        <ul class="lately">
+          <li>Dragons as jointed 3D models that swoop, burn, land and sleep</li>
+          <li>Binoculars: hold <kbd>Z</kbd> and turn the wheel to look up to 12 times closer</li>
+          <li>Stars over the heads of people with work for you</li>
+          <li>Steadier, tear-free frames in first person</li>
+          <li>Land that keeps its shape after earthquakes and disasters</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="dragons">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Dragons in 3D</p>
+        <h2>Here be dragons</h2>
+        <p>Dragons fly as jointed 3D models with living wings. They cruise over the land, swoop on a town breathing fire, land to burn what's left and sleep it off. Watch from a rooftop, or from the sky in the 3D god view.</p>
+      </div>
+      <div class="mosaic">
+        <figure class="big">
+          <div class="shot"><img src="shots/dragon_fire.webp" alt="A red dragon breathing a stream of fire across a violet dusk sky, seen from beside a village well." loading="lazy"></div>
+          <figcaption>Breathing fire over the rooftops at dusk.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/dragon_god.webp" alt="The 3D god view looking down on a town by the sea, a dragon above it and a district in flames." loading="lazy"></div>
+          <figcaption>The same dragon in the 3D god view, over the town it set alight.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/dragon_dusk.webp" alt="A dragon gliding over a coast and mountains in golden evening light." loading="lazy"></div>
+          <figcaption>Cruising the coast at golden hour.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="compare">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Press V on the map</p>
+        <h2>Flat map, or the whole world in 3D</h2>
+        <p>The 3D god view draws your map as the world it is, under the game's own buttons and powers. Drag across the picture: the same village at the same zoom, both straight from the game.</p>
+      </div>
+      <figure style="margin:0">
+        <div class="cmp" id="cmp">
+          <img src="shots/god_day.webp" alt="The village in the 3D god view: timber houses with teal roofs among green and autumn trees by the sea." loading="lazy">
+          <img class="top" src="shots/map_flat.webp" alt="The same village on WorldBox's flat map." loading="lazy">
+          <span class="rule"></span>
+          <span class="tag l">Flat map</span><span class="tag r">3D view</span>
+          <input type="range" id="cmp-range" min="0" max="100" value="50" step="0.5" aria-label="Slide between the flat map and the 3D view">
+        </div>
+        <figcaption>Map zoom 26, the same moment. The 3D view fades in below zoom 60 and covers the map from 40 (both set in the F2 menu).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band" id="chaos">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Disasters, up close</p>
+        <h2>Be there when the sky falls</h2>
+        <p>God powers land in 3D. Become Crabzilla and fire its claw lasers from its own eyes, or watch an atomic bomb's mushroom cloud climb over the sea from a mountainside.</p>
+      </div>
+      <div class="trio">
+        <figure>
+          <div class="shot"><img src="shots/crab.webp" alt="Crabzilla's red claws in view, firing cyan lasers into a burning town while a dragon flies overhead." loading="lazy"></div>
+          <figcaption>Crabzilla's claw lasers, with a dragon overhead.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/nuke.webp" alt="A mushroom cloud rising over a sunny island and sea, seen past a snowy mountainside." loading="lazy"></div>
+          <figcaption>An atomic bomb across the bay.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/burning.webp" alt="A town burning at dusk, seen from above in the 3D god view." loading="lazy"></div>
+          <figcaption>What the dragon left, from the god view.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="hours">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Day and night</p>
+        <h2>Day, sunset, after dark</h2>
+        <p>The sun crosses the sky over a 20-minute day. Lived-in houses light their windows at night, fires and lava light everything near them, and the northern lights, comets and meteor showers come out over the sea. <kbd>F7</kbd> holds the hour you like.</p>
+      </div>
+      <div class="hours">
+        <div class="stack" id="hours-stack">
+          <img src="shots/camp_day.webp" alt="A camp of straw huts round a cooking fire under big trees by a beach, in daylight." loading="lazy">
+          <img src="shots/camp_sunset.webp" alt="The same camp at sunset, the sky orange behind the trees and the sea glittering." loading="lazy" style="opacity:0">
+          <img src="shots/camp_night.webp" alt="The same camp at night under the stars, the fire lighting the huts." loading="lazy" style="opacity:0">
+        </div>
+        <div class="dial">
+          <input type="range" id="hour" min="0" max="200" value="0" aria-label="Time of day: day, sunset, night">
+          <span class="now" id="h0">Day</span><span id="h1" style="text-align:center">Sunset</span><span id="h2" style="text-align:right">Night</span>
+        </div>
+      </div>
+      <div class="trio sky">
+        <figure>
+          <div class="shot"><img src="shots/lighthouse.webp" alt="A lighthouse with a lit lamp by a pier at night, the Milky Way above a violet sea." loading="lazy"></div>
+          <figcaption>A lighthouse under the Milky Way.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/aurora.webp" alt="Green and violet northern lights over the sea above the town's spire." loading="lazy"></div>
+          <figcaption>The northern lights over the town.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/comet.webp" alt="A bright comet with a long tail in a starry night sky." loading="lazy"></div>
+          <figcaption>Some nights a comet hangs over the world.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="inside">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Once you're in</p>
+        <h2>Live their life, or end someone else's</h2>
+        <p>Select any creature and press <kbd>G</kbd>, or zoom all the way in. Everything around you is the live world: the people go about their day, and what you do changes the map.</p>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="shots/talk.webp" alt="Talking to a villager on a beach at sunset; her reply in a panel: Keep your distance, outsider." loading="lazy"></div>
+          <figcaption><h3>Talk to anyone</h3><p>Press <kbd>E</kbd> for a whole conversation: their work, their family, the news, their king.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/home.webp" alt="Inside a stone house: a table with a candle, a bed and a rug, sunlight through a small window." loading="lazy"></div>
+          <figcaption><h3>Walk into their homes</h3><p>Every house has a room inside, with its hearth and table and daylight through the windows.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/power.webp" alt="An evil mage's fireball setting a street of houses ablaze." loading="lazy"></div>
+          <figcaption><h3>Use your kind's power</h3><p><kbd>X</kbd> throws a bandit's firebomb, raises a necromancer's dead, casts an evil mage's fireball.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/fight.webp" alt="Villagers fighting orc raiders between houses at sunset, flames at the edges." loading="lazy"></div>
+          <figcaption><h3>Fight where it happens</h3><p>Swing at what's under the crosshair, kick, draw a bow. When raiders hit your town, you're standing in it.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/ship.webp" alt="At a ship's wheel off the coast at dusk, the town's stone houses on the shore." loading="lazy"></div>
+          <figcaption><h3>Take the helm</h3><p>Take over a ship and steer her yourself: <kbd>W</kbd>/<kbd>S</kbd> set the sails, <kbd>A</kbd>/<kbd>D</kbd> turn the wheel, <kbd>Shift</kbd> fills the sails with a gust.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/wolf.webp" alt="A wolf's low view across a bay to pink blossom trees at golden hour." loading="lazy"></div>
+          <figcaption><h3>Be anything</h3><p>A wolf, a sheep, a skeleton, Crabzilla. Every creature you can possess, you can see through.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="horizons">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Draw distance: the whole map</p>
+        <h2>All the way to the far shore</h2>
+        <p>See 270 tiles out, or to the other side of the map (<kbd>F6</kbd>). Far mountains turn blue in the haze and the low sun lays a road of light across the sea.</p>
+      </div>
+      <figure class="wide">
+        <div class="shot"><img src="shots/sea.webp" alt="Standing on a sandy shore at golden hour, the sun low over a glittering sea and a distant island." loading="lazy"></div>
+        <figcaption>A villager on the shore below his town, golden hour.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band" id="biomes">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Every biome</p>
+        <h2>Candy canes to crystal spires</h2>
+        <p>Each of WorldBox's biomes has its own ground, trees and plants in 3D. These are all from one test world, a few steps apart.</p>
+      </div>
+      <div class="strip" tabindex="0" aria-label="Biome screenshots, scroll sideways">
+        <figure><div class="shot"><img src="shots/biome_mushroom.webp" alt="Giant red-capped mushrooms." loading="lazy"></div><figcaption>Mushroom</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_crystal.webp" alt="Purple crystal trees on cyan ground." loading="lazy"></div><figcaption>Crystal</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_candy.webp" alt="Candy canes on pink ground." loading="lazy"></div><figcaption>Candy</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_permafrost.webp" alt="Snowy pines on frozen ground." loading="lazy"></div><figcaption>Permafrost</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_corrupted.webp" alt="Dead trees with glowing red eyes on purple ground." loading="lazy"></div><figcaption>Corrupted</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_savanna.webp" alt="A baobab on golden grass." loading="lazy"></div><figcaption>Savanna</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_infernal.webp" alt="Burning black trees on red ground." loading="lazy"></div><figcaption>Infernal</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_enchanted.webp" alt="Pink and purple round-crowned trees." loading="lazy"></div><figcaption>Enchanted</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_desert.webp" alt="Palms and cacti on sand." loading="lazy"></div><figcaption>Desert</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_singularity.webp" alt="Twisted dark spires with pink rings on violet ground." loading="lazy"></div><figcaption>Singularity</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_swamp.webp" alt="Mangroves on dark marsh." loading="lazy"></div><figcaption>Swamp</figcaption></figure>
+        <figure><div class="shot"><img src="shots/biome_maple.webp" alt="Red maples on orange ground." loading="lazy"></div><figcaption>Maple</figcaption></figure>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Worldfall is in beta: a work in progress that keeps getting updates, and all assets are subject to change. It is an unofficial fan mod for WorldBox, which is made by Maxim Karpenko. Every picture on this page was captured in the game with the mod running.</p>
+    <nav class="foot-links" aria-label="Worldfall elsewhere">
+      <a href="https://discord.gg/KNE9Bd9j" target="_blank" rel="noopener">Discord</a>
+      <a href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener">TikTok</a>
+      <a href="https://x.com/worldfall3d" target="_blank" rel="noopener">X / Twitter</a>
+      <a href="https://www.reddit.com/r/worldfall3d/" target="_blank" rel="noopener">Reddit</a>
+      <a href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Ko-fi</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var FRAMES = [{"f":"f000.webp","p":"map","z":143.4,"c":10.0,"at":0.0,"g":"map","n":0},{"f":"f001.webp","p":"map","z":143.4,"c":10.0,"at":0.0032,"g":"map","n":11},{"f":"f002.webp","p":"map","z":143.0,"c":10.0,"at":0.0064,"g":"map","n":22},{"f":"f003.webp","p":"map","z":141.9,"c":10.0,"at":0.00967,"g":"map","n":25},{"f":"f004.webp","p":"map","z":140.2,"c":10.0,"at":0.01354,"g":"map","n":28},{"f":"f005.webp","p":"map","z":137.8,"c":10.0,"at":0.018,"g":"map","n":31},{"f":"f006.webp","p":"map","z":136.0,"c":10.0,"at":0.02128,"g":"map","n":33},{"f":"f007.webp","p":"map","z":133.9,"c":10.0,"at":0.0248,"g":"map","n":35},{"f":"f008.webp","p":"map","z":131.6,"c":10.0,"at":0.02856,"g":"map","n":37},{"f":"f009.webp","p":"map","z":129.1,"c":10.0,"at":0.03254,"g":"map","n":39},{"f":"f010.webp","p":"map","z":126.5,"c":10.0,"at":0.03673,"g":"map","n":41},{"f":"f011.webp","p":"map","z":123.7,"c":10.0,"at":0.04113,"g":"map","n":43},{"f":"f012.webp","p":"map","z":120.7,"c":10.0,"at":0.04574,"g":"map","n":45},{"f":"f013.webp","p":"map","z":117.7,"c":10.0,"at":0.05053,"g":"map","n":47},{"f":"f014.webp","p":"map","z":114.6,"c":10.0,"at":0.05551,"g":"map","n":49},{"f":"f015.webp","p":"map","z":111.4,"c":10.0,"at":0.06066,"g":"map","n":51},{"f":"f016.webp","p":"map","z":108.1,"c":10.0,"at":0.06599,"g":"map","n":53},{"f":"f017.webp","p":"map","z":104.8,"c":10.0,"at":0.07147,"g":"map","n":55},{"f":"f018.webp","p":"map","z":101.5,"c":10.0,"at":0.07711,"g":"map","n":57},{"f":"f019.webp","p":"map","z":98.2,"c":10.0,"at":0.08289,"g":"map","n":59},{"f":"f020.webp","p":"map","z":94.9,"c":10.0,"at":0.08882,"g":"map","n":61},{"f":"f021.webp","p":"map","z":91.6,"c":10.0,"at":0.09487,"g":"map","n":63},{"f":"f022.webp","p":"map","z":88.4,"c":10.0,"at":0.10104,"g":"map","n":65},{"f":"f023.webp","p":"map","z":85.1,"c":10.0,"at":0.10733,"g":"map","n":67},{"f":"f024.webp","p":"map","z":83.5,"c":10.0,"at":0.11051,"g":"map","n":68},{"f":"f025.webp","p":"map","z":82.0,"c":10.0,"at":0.11372,"g":"map","n":69},{"f":"f026.webp","p":"map","z":80.4,"c":10.0,"at":0.11695,"g":"map","n":70},{"f":"f027.webp","p":"map","z":78.9,"c":10.0,"at":0.12021,"g":"map","n":71},{"f":"f028.webp","p":"map","z":77.3,"c":10.0,"at":0.12349,"g":"map","n":72},{"f":"f029.webp","p":"map","z":75.8,"c":10.0,"at":0.12678,"g":"map","n":73},{"f":"f030.webp","p":"map","z":74.3,"c":10.0,"at":0.1301,"g":"map","n":74},{"f":"f031.webp","p":"map","z":72.8,"c":10.0,"at":0.13345,"g":"map","n":75},{"f":"f032.webp","p":"map","z":71.4,"c":10.0,"at":0.13681,"g":"map","n":76},{"f":"f033.webp","p":"map","z":69.9,"c":10.0,"at":0.14018,"g":"map","n":77},{"f":"f034.webp","p":"map","z":68.5,"c":10.0,"at":0.14358,"g":"map","n":78},{"f":"f035.webp","p":"map","z":67.1,"c":10.0,"at":0.14699,"g":"map","n":79},{"f":"f036.webp","p":"map","z":65.7,"c":10.0,"at":0.15042,"g":"map","n":80},{"f":"f037.webp","p":"map","z":64.4,"c":10.0,"at":0.15386,"g":"map","n":81},{"f":"f038.webp","p":"map","z":63.0,"c":10.0,"at":0.1573,"g":"map","n":82},{"f":"f039.webp","p":"map","z":61.7,"c":10.0,"at":0.16078,"g":"map","n":83},{"f":"f040.webp","p":"map","z":60.4,"c":10.0,"at":0.16425,"g":"map","n":84},{"f":"f041.webp","p":"fade","z":59.2,"c":10.0,"at":0.16773,"g":"fade","n":85},{"f":"f042.webp","p":"fade","z":57.9,"c":10.0,"at":0.17121,"g":"fade","n":86},{"f":"f043.webp","p":"fade","z":56.7,"c":10.0,"at":0.17473,"g":"fade","n":87},{"f":"f044.webp","p":"fade","z":55.5,"c":10.0,"at":0.17823,"g":"fade","n":88},{"f":"f045.webp","p":"fade","z":54.3,"c":10.0,"at":0.18173,"g":"fade","n":89},{"f":"f046.webp","p":"fade","z":53.2,"c":10.0,"at":0.18526,"g":"fade","n":90},{"f":"f047.webp","p":"fade","z":52.0,"c":10.0,"at":0.18878,"g":"fade","n":91},{"f":"f048.webp","p":"fade","z":50.9,"c":10.0,"at":0.19231,"g":"fade","n":92},{"f":"f049.webp","p":"fade","z":49.9,"c":10.0,"at":0.19582,"g":"fade","n":93},{"f":"f050.webp","p":"fade","z":48.8,"c":10.0,"at":0.19936,"g":"fade","n":94},{"f":"f051.webp","p":"fade","z":47.7,"c":10.0,"at":0.20289,"g":"fade","n":95},{"f":"f052.webp","p":"fade","z":46.7,"c":10.0,"at":0.20642,"g":"fade","n":96},{"f":"f053.webp","p":"fade","z":45.7,"c":10.0,"at":0.20993,"g":"fade","n":97},{"f":"f054.webp","p":"fade","z":44.8,"c":10.0,"at":0.21344,"g":"fade","n":98},{"f":"f055.webp","p":"fade","z":43.8,"c":10.0,"at":0.21699,"g":"fade","n":99},{"f":"f056.webp","p":"fade","z":42.9,"c":10.0,"at":0.22047,"g":"fade","n":100},{"f":"f057.webp","p":"fade","z":42.0,"c":10.0,"at":0.22399,"g":"fade","n":101},{"f":"f058.webp","p":"fade","z":41.1,"c":10.0,"at":0.2275,"g":"fade","n":102},{"f":"f059.webp","p":"fade","z":40.2,"c":10.0,"at":0.23097,"g":"fade","n":103},{"f":"f060.webp","p":"god","z":39.4,"c":10.0,"at":0.23448,"g":"god","n":104},{"f":"f061.webp","p":"god","z":38.5,"c":10.0,"at":0.23794,"g":"god","n":105},{"f":"f062.webp","p":"god","z":37.8,"c":10.0,"at":0.24139,"g":"god","n":106},{"f":"f063.webp","p":"god","z":37.0,"c":10.0,"at":0.24487,"g":"god","n":107},{"f":"f064.webp","p":"god","z":36.2,"c":10.0,"at":0.24829,"g":"god","n":108},{"f":"f065.webp","p":"god","z":35.5,"c":10.0,"at":0.25171,"g":"god","n":109},{"f":"f066.webp","p":"god","z":34.7,"c":10.0,"at":0.25514,"g":"god","n":110},{"f":"f067.webp","p":"god","z":34.0,"c":10.0,"at":0.25851,"g":"god","n":111},{"f":"f068.webp","p":"god","z":33.3,"c":10.0,"at":0.2619,"g":"god","n":112},{"f":"f069.webp","p":"god","z":32.7,"c":10.0,"at":0.26527,"g":"god","n":113},{"f":"f070.webp","p":"god","z":32.0,"c":10.0,"at":0.26861,"g":"god","n":114},{"f":"f071.webp","p":"god","z":31.4,"c":10.0,"at":0.27192,"g":"god","n":115},{"f":"f072.webp","p":"god","z":30.8,"c":10.0,"at":0.27524,"g":"god","n":116},{"f":"f073.webp","p":"god","z":30.2,"c":10.0,"at":0.27849,"g":"god","n":117},{"f":"f074.webp","p":"god","z":29.6,"c":10.0,"at":0.28174,"g":"god","n":118},{"f":"f075.webp","p":"god","z":29.0,"c":10.0,"at":0.285,"g":"god","n":119},{"f":"f076.webp","p":"god","z":28.5,"c":10.0,"at":0.28821,"g":"god","n":120},{"f":"f077.webp","p":"god","z":27.4,"c":10.0,"at":0.29456,"g":"god","n":122},{"f":"f078.webp","p":"god","z":26.4,"c":10.0,"at":0.30075,"g":"god","n":124},{"f":"f079.webp","p":"god","z":25.5,"c":10.0,"at":0.30687,"g":"god","n":126},{"f":"f080.webp","p":"god","z":24.6,"c":10.0,"at":0.3129,"g":"god","n":128},{"f":"f081.webp","p":"god","z":23.8,"c":10.0,"at":0.31871,"g":"god","n":130},{"f":"f082.webp","p":"god","z":23.1,"c":10.0,"at":0.32445,"g":"god","n":132},{"f":"f083.webp","p":"god","z":22.4,"c":10.0,"at":0.32999,"g":"god","n":134},{"f":"f084.webp","p":"god","z":21.7,"c":10.0,"at":0.33542,"g":"god","n":136},{"f":"f085.webp","p":"god","z":21.1,"c":10.0,"at":0.34067,"g":"god","n":138},{"f":"f086.webp","p":"god","z":20.5,"c":10.0,"at":0.34572,"g":"god","n":140},{"f":"f087.webp","p":"god","z":20.0,"c":10.0,"at":0.35061,"g":"god","n":142},{"f":"f088.webp","p":"god","z":19.5,"c":10.0,"at":0.35533,"g":"god","n":144},{"f":"f089.webp","p":"god","z":19.0,"c":10.0,"at":0.35979,"g":"god","n":146},{"f":"f090.webp","p":"god","z":18.6,"c":10.0,"at":0.36412,"g":"god","n":148},{"f":"f091.webp","p":"god","z":18.2,"c":10.0,"at":0.36822,"g":"god","n":150},{"f":"f092.webp","p":"god","z":17.9,"c":10.0,"at":0.37202,"g":"god","n":152},{"f":"f093.webp","p":"god","z":17.6,"c":10.0,"at":0.37572,"g":"god","n":154},{"f":"f094.webp","p":"god","z":17.4,"c":10.0,"at":0.37908,"g":"god","n":156},{"f":"f095.webp","p":"god","z":17.1,"c":10.0,"at":0.38377,"g":"god","n":159},{"f":"f096.webp","p":"god","z":16.8,"c":10.0,"at":0.38781,"g":"god","n":162},{"f":"f097.webp","p":"god","z":16.7,"c":10.0,"at":0.39126,"g":"god","n":165},{"f":"f098.webp","p":"god","z":16.6,"c":10.0,"at":0.39495,"g":"god","n":169},{"f":"f099.webp","p":"magnet","z":16.6,"c":10.0,"at":0.39579,"g":"magnet","n":170},{"f":"f100.webp","p":"magnet","z":16.4,"c":10.0,"at":0.39941,"g":"magnet","n":173},{"f":"f101.webp","p":"magnet","z":16.2,"c":10.0,"at":0.40268,"g":"magnet","n":175},{"f":"f102.webp","p":"magnet","z":15.9,"c":10.0,"at":0.40652,"g":"magnet","n":177},{"f":"f103.webp","p":"magnet","z":15.6,"c":10.0,"at":0.41083,"g":"magnet","n":179},{"f":"f104.webp","p":"magnet","z":15.2,"c":10.0,"at":0.41569,"g":"magnet","n":181},{"f":"f105.webp","p":"magnet","z":14.7,"c":10.0,"at":0.42091,"g":"magnet","n":183},{"f":"f106.webp","p":"magnet","z":14.3,"c":10.0,"at":0.4265,"g":"magnet","n":185},{"f":"f107.webp","p":"magnet","z":13.8,"c":10.0,"at":0.43251,"g":"magnet","n":187},{"f":"f108.webp","p":"magnet","z":13.3,"c":10.0,"at":0.43868,"g":"magnet","n":189},{"f":"f109.webp","p":"magnet","z":13.1,"c":10.0,"at":0.44187,"g":"magnet","n":190},{"f":"f110.webp","p":"magnet","z":12.6,"c":10.0,"at":0.44831,"g":"magnet","n":192},{"f":"f111.webp","p":"magnet","z":12.3,"c":10.0,"at":0.45155,"g":"magnet","n":193},{"f":"f112.webp","p":"magnet","z":11.9,"c":10.0,"at":0.45795,"g":"magnet","n":195},{"f":"f113.webp","p":"magnet","z":11.4,"c":10.0,"at":0.46422,"g":"magnet","n":197},{"f":"f114.webp","p":"magnet","z":11.0,"c":10.0,"at":0.47031,"g":"magnet","n":199},{"f":"f115.webp","p":"magnet","z":10.7,"c":10.0,"at":0.47586,"g":"magnet","n":201},{"f":"f116.webp","p":"magnet","z":10.4,"c":10.0,"at":0.48091,"g":"magnet","n":203},{"f":"f117.webp","p":"magnet","z":10.2,"c":10.0,"at":0.48519,"g":"magnet","n":205},{"f":"f118.webp","p":"magnet","z":10.0,"c":9.99,"at":0.4891,"g":"magnet","n":207},{"f":"f119.webp","p":"close","z":10.0,"c":8.59,"at":0.5059,"g":"close","n":210},{"f":"f120.webp","p":"close","z":10.0,"c":8.12,"at":0.51207,"g":"close","n":211},{"f":"f121.webp","p":"close","z":10.0,"c":7.97,"at":0.5154,"g":"close","n":213},{"f":"f122.webp","p":"close","z":10.0,"c":6.94,"at":0.53022,"g":"close","n":215},{"f":"f123.webp","p":"close","z":10.0,"c":6.53,"at":0.53683,"g":"close","n":216},{"f":"f124.webp","p":"close","z":10.0,"c":6.38,"at":0.5406,"g":"close","n":218},{"f":"f125.webp","p":"close","z":10.0,"c":5.26,"at":0.56067,"g":"close","n":220},{"f":"f126.webp","p":"close","z":10.0,"c":5.09,"at":0.56459,"g":"close","n":221},{"f":"f127.webp","p":"close","z":10.0,"c":4.28,"at":0.5843,"g":"close","n":225},{"f":"f128.webp","p":"close","z":10.0,"c":4.13,"at":0.5885,"g":"close","n":226},{"f":"f129.webp","p":"close","z":10.0,"c":4.07,"at":0.59221,"g":"close","n":229},{"f":"f130.webp","p":"close","z":10.0,"c":3.39,"at":0.61052,"g":"close","n":230},{"f":"f131.webp","p":"close","z":10.0,"c":3.3,"at":0.61388,"g":"close","n":231},{"f":"f132.webp","p":"close","z":10.0,"c":3.25,"at":0.61765,"g":"close","n":234},{"f":"f133.webp","p":"close","z":10.0,"c":2.85,"at":0.63102,"g":"close","n":235},{"f":"f134.webp","p":"close","z":10.0,"c":2.7,"at":0.63698,"g":"close","n":236},{"f":"f135.webp","p":"close","z":10.0,"c":2.63,"at":0.64027,"g":"close","n":237},{"f":"f136.webp","p":"close","z":10.0,"c":2.2,"at":0.65971,"g":"close","n":240},{"f":"f137.webp","p":"close","z":10.0,"c":2.11,"at":0.66449,"g":"close","n":241},{"f":"f138.webp","p":"close","z":10.0,"c":2.08,"at":0.66817,"g":"close","n":244},{"f":"f139.webp","p":"close","z":10.0,"c":1.79,"at":0.68335,"g":"close","n":245},{"f":"f140.webp","p":"close","z":10.0,"c":1.67,"at":0.69078,"g":"close","n":246},{"f":"f141.webp","p":"close","z":10.0,"c":1.41,"at":0.7101,"g":"close","n":250},{"f":"f142.webp","p":"close","z":10.0,"c":1.35,"at":0.71505,"g":"close","n":251},{"f":"f143.webp","p":"close","z":10.0,"c":1.33,"at":0.71878,"g":"close","n":254},{"f":"f144.webp","p":"close","z":10.0,"c":1.15,"at":0.73351,"g":"close","n":255},{"f":"f145.webp","p":"close","z":10.0,"c":1.09,"at":0.73942,"g":"close","n":256},{"f":"f146.webp","p":"close","z":10.0,"c":1.07,"at":0.74274,"g":"close","n":258},{"f":"f147.webp","p":"close","z":10.0,"c":0.95,"at":0.75569,"g":"close","n":260},{"f":"f148.webp","p":"close","z":10.0,"c":0.91,"at":0.76059,"g":"close","n":261},{"f":"f149.webp","p":"close","z":10.0,"c":0.9,"at":0.76396,"g":"close","n":264},{"f":"f150.webp","p":"close","z":10.0,"c":0.9,"at":0.7678,"g":"close","n":269},{"f":"f151.webp","p":"close","z":10.0,"c":0.9,"at":0.77164,"g":"close","n":274},{"f":"f152.webp","p":"close","z":10.0,"c":0.9,"at":0.77548,"g":"close","n":279},{"f":"f153.webp","p":"close","z":10.0,"c":0.9,"at":0.77932,"g":"close","n":284},{"f":"f154.webp","p":"dive","z":10.0,"c":0.9,"at":0.79146,"g":"dive","n":289},{"f":"f155.webp","p":"dive","z":6.3,"c":10.0,"at":0.80052,"g":"dive","n":290},{"f":"f156.webp","p":"dive","z":6.3,"c":10.0,"at":0.80959,"g":"dive","n":291},{"f":"f157.webp","p":"dive","z":7.8,"c":10.0,"at":0.81866,"g":"dive","n":292},{"f":"f158.webp","p":"dive","z":9.1,"c":10.0,"at":0.82773,"g":"dive","n":293},{"f":"f159.webp","p":"dive","z":10.3,"c":10.0,"at":0.83679,"g":"dive","n":294},{"f":"f160.webp","p":"dive","z":11.0,"c":10.0,"at":0.84586,"g":"dive","n":295},{"f":"f161.webp","p":"dive","z":11.0,"c":10.0,"at":0.85493,"g":"dive","n":296},{"f":"f162.webp","p":"dive","z":11.0,"c":10.0,"at":0.86399,"g":"dive","n":297},{"f":"f163.webp","p":"dive","z":11.0,"c":10.0,"at":0.87306,"g":"dive","n":298},{"f":"f164.webp","p":"dive","z":11.0,"c":10.0,"at":0.88213,"g":"dive","n":299},{"f":"f165.webp","p":"dive","z":11.0,"c":10.0,"at":0.8912,"g":"dive","n":300},{"f":"f166.webp","p":"eyes","z":11.0,"c":10.0,"at":0.89182,"g":"eyes","n":301},{"f":"f167.webp","p":"eyes","z":11.0,"c":10.0,"at":0.89557,"g":"eyes","n":307},{"f":"f168.webp","p":"eyes","z":11.0,"c":10.0,"at":0.89932,"g":"eyes","n":313},{"f":"f169.webp","p":"eyes","z":11.0,"c":10.0,"at":0.90308,"g":"eyes","n":319},{"f":"f170.webp","p":"eyes","z":11.0,"c":10.0,"at":0.90683,"g":"eyes","n":325},{"f":"f171.webp","p":"eyes","z":11.0,"c":10.0,"at":0.91058,"g":"eyes","n":331},{"f":"f172.webp","p":"eyes","z":11.0,"c":10.0,"at":0.91433,"g":"eyes","n":337},{"f":"f173.webp","p":"eyes","z":11.0,"c":10.0,"at":0.91808,"g":"eyes","n":343},{"f":"f174.webp","p":"eyes","z":11.0,"c":10.0,"at":0.92184,"g":"eyes","n":349},{"f":"f175.webp","p":"eyes","z":11.0,"c":10.0,"at":0.92559,"g":"eyes","n":355},{"f":"f176.webp","p":"eyes","z":11.0,"c":10.0,"at":0.92934,"g":"eyes","n":361},{"f":"f177.webp","p":"eyes","z":11.0,"c":10.0,"at":0.93309,"g":"eyes","n":367},{"f":"f178.webp","p":"eyes","z":11.0,"c":10.0,"at":0.93684,"g":"eyes","n":373},{"f":"f179.webp","p":"walk","z":11.0,"c":10.0,"at":0.9406,"g":"walk","n":379},{"f":"f180.webp","p":"walk","z":11.0,"c":10.0,"at":0.94435,"g":"walk","n":385},{"f":"f181.webp","p":"walk","z":11.0,"c":10.0,"at":0.9481,"g":"walk","n":391},{"f":"f182.webp","p":"walk","z":11.0,"c":10.0,"at":0.95185,"g":"walk","n":397},{"f":"f183.webp","p":"walk","z":11.0,"c":10.0,"at":0.9556,"g":"walk","n":403},{"f":"f184.webp","p":"walk","z":11.0,"c":10.0,"at":0.95935,"g":"walk","n":409},{"f":"f185.webp","p":"walk","z":11.0,"c":10.0,"at":0.96311,"g":"walk","n":415},{"f":"f186.webp","p":"walk","z":11.0,"c":10.0,"at":0.96686,"g":"walk","n":421},{"f":"f187.webp","p":"walk","z":11.0,"c":10.0,"at":0.97061,"g":"walk","n":427},{"f":"f188.webp","p":"walk","z":11.0,"c":10.0,"at":0.97436,"g":"walk","n":433},{"f":"f189.webp","p":"walk","z":11.0,"c":10.0,"at":0.97811,"g":"walk","n":439},{"f":"f190.webp","p":"walk","z":11.0,"c":10.0,"at":0.98187,"g":"walk","n":445},{"f":"f191.webp","p":"walk","z":11.0,"c":10.0,"at":0.98562,"g":"walk","n":451},{"f":"f192.webp","p":"walk","z":11.0,"c":10.0,"at":0.98937,"g":"walk","n":457},{"f":"f193.webp","p":"walk","z":11.0,"c":10.0,"at":0.99312,"g":"walk","n":463},{"f":"f194.webp","p":"walk","z":11.0,"c":10.0,"at":0.99687,"g":"walk","n":469},{"f":"f195.webp","p":"walk","z":11.0,"c":10.0,"at":1.0,"g":"walk","n":474}];
+  var N = FRAMES.length;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- the dive: scroll scrubs the captured frames ----
+  var dive = document.getElementById("dive");
+  var canvas = document.getElementById("reel");
+  var ctx = canvas.getContext("2d");
+  var poster = document.getElementById("poster");
+  var intro = document.getElementById("intro");
+  var stops = document.getElementById("stops");
+  var stopItems = Array.prototype.slice.call(stops.querySelectorAll("li"));
+  var rk = document.getElementById("rk"), rv = document.getElementById("rv"), ralt = document.getElementById("ralt"), rf = document.getElementById("rf");
+  var loadingEl = document.getElementById("loading"), lp = document.getElementById("lp");
+  var imgs = new Array(N), ready = new Array(N), loaded = 0;
+  var PHASE_STOP = { map: 0, fade: 1, god: 1, magnet: 2, close: 3, dive: 4, eyes: 4, walk: 4 };
+  var zMax = N ? FRAMES[0].z : 143, zMin = 10, cMin = 0.9;
+
+  // Load in passes, coarse to fine, so any scroll position soon has a nearby frame.
+  var order = [], seen = {};
+  [32, 16, 8, 4, 2, 1].forEach(function (step) {
+    for (var i = 0; i < N; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); }
+  });
+  if (N && !seen[N - 1]) order.push(N - 1);
+  var next = 0, inFlight = 0;
+  function pump() {
+    while (inFlight < 6 && next < order.length) {
+      (function (i) {
+        var img = new Image();
+        inFlight++;
+        img.onload = function () {
+          var done = function () { ready[i] = true; finish(); };
+          if (img.decode) img.decode().then(done, done); else done();
+        };
+        img.onerror = finish;
+        function finish() {
+          inFlight--; loaded++;
+          lp.textContent = Math.round(loaded / N * 100);
+          if (loaded >= N) loadingEl.classList.add("done");
+          if (i === 0 || Math.abs(i - shown) < 3) want = true;
+          pump();
+        }
+        img.src = "frames/" + FRAMES[i].f;
+        imgs[i] = img;
+      })(order[next++]);
+    }
+  }
+
+  var dpr = 1, W = 0, H = 0;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = canvas.width = Math.max(1, Math.round(r.width * dpr));
+    H = canvas.height = Math.max(1, Math.round(r.height * dpr));
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    want = true;
+  }
+
+  function nearestReady(i) {
+    for (var d = 0; d < N; d++) {
+      if (i - d >= 0 && ready[i - d]) return i - d;
+      if (i + d < N && ready[i + d]) return i + d;
+    }
+    return -1;
+  }
+
+  function cover(img, alpha) {
+    var iw = img.naturalWidth || 1280, ih = img.naturalHeight || 720;
+    var s = Math.max(W / iw, H / ih), w = iw * s, h = ih * s;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+  }
+
+  // Scroll (0..1) to a place among the frames, by each frame's share of the scroll.
+  function frameAt(p) {
+    if (N < 2) return 0;
+    var lo = 0, hi = N - 1;
+    if (p <= FRAMES[0].at) return 0;
+    if (p >= FRAMES[hi].at) return hi;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (FRAMES[mid].at <= p) lo = mid; else hi = mid; }
+    var a = FRAMES[lo].at, b = FRAMES[hi].at;
+    return lo + (b > a ? (p - a) / (b - a) : 0);
+  }
+
+  var target = 0, current = 0, shown = 0, want = true, drawnOnce = false;
+  function progress() {
+    var r = dive.getBoundingClientRect();
+    var run = r.height - window.innerHeight;
+    return run > 0 ? Math.min(1, Math.max(0, -r.top / run)) : 0;
+  }
+
+  function draw(pos) {
+    var i = Math.floor(pos), t = pos - i;
+    var a = ready[i] ? i : nearestReady(i);
+    if (a < 0) return;
+    ctx.clearRect(0, 0, W, H);
+    cover(imgs[a], 1);
+    if (a === i && t > 0.001 && i + 1 < N && ready[i + 1]) cover(imgs[i + 1], t);
+    ctx.globalAlpha = 1;
+    if (!drawnOnce) { drawnOnce = true; poster.style.visibility = "hidden"; }
+    shown = Math.round(pos);
+  }
+
+  function hud(pos, p) {
+    var f = FRAMES[Math.min(N - 1, Math.round(pos))];
+    if (!f) return;
+    var stop = PHASE_STOP[f.p] || 0;
+    stopItems.forEach(function (li, k) {
+      li.classList.toggle("now", k === stop);
+      li.classList.toggle("done", k < stop);
+    });
+    var alt;
+    if (f.p === "close") {
+      rk.textContent = "Close-up";
+      rv.textContent = f.c.toFixed(2);
+      alt = 0.3 * (Math.log(f.c) - Math.log(cMin)) / (Math.log(zMin) - Math.log(cMin));
+    } else if (f.p === "dive") {
+      rk.textContent = "Diving in";
+      rv.textContent = "...";
+      alt = 0.02;
+    } else if (f.p === "eyes" || f.p === "walk") {
+      rk.textContent = "View";
+      rv.textContent = "Eyes";
+      alt = 0;
+    } else {
+      rk.textContent = "Map zoom";
+      rv.textContent = f.z.toFixed(1);
+      alt = 0.3 + 0.7 * (Math.log(f.z) - Math.log(zMin)) / (Math.log(zMax) - Math.log(zMin));
+    }
+    ralt.style.transform = "scaleX(" + Math.max(0.01, Math.min(1, alt)).toFixed(3) + ")";
+    rf.textContent = f.n + 1;
+    // The title gives way as the zoom starts; the steps take over.
+    var k = Math.min(1, p / 0.05);
+    intro.style.opacity = (1 - k).toFixed(3);
+    intro.style.transform = "translateY(" + (-k * 24).toFixed(1) + "px)";
+    intro.style.visibility = k >= 1 ? "hidden" : "visible";
+    stops.classList.toggle("on", p > 0.02);
+  }
+
+  function tick() {
+    target = frameAt(progress());
+    var d = target - current;
+    if (reduce || Math.abs(d) < 0.01) current = target; else current += d * 0.22;
+    if (want || Math.abs(d) > 0.0005) {
+      draw(current);
+      hud(current, progress());
+      want = false;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  if (N) {
+    resize();
+    window.addEventListener("resize", resize);
+    pump();
+    requestAnimationFrame(tick);
+  }
+
+  // ---- flat map / 3D ----
+  var cmp = document.getElementById("cmp"), cmpRange = document.getElementById("cmp-range");
+  function setCmp() { cmp.style.setProperty("--pos", cmpRange.value + "%"); }
+  cmpRange.addEventListener("input", setCmp);
+  setCmp();
+
+  // ---- the hour ----
+  var hour = document.getElementById("hour");
+  var layers = document.querySelectorAll("#hours-stack img");
+  var labels = [document.getElementById("h0"), document.getElementById("h1"), document.getElementById("h2")];
+  function setHour() {
+    var v = hour.value / 100;          // 0 noon .. 1 golden .. 2 night
+    layers[1].style.opacity = Math.min(1, v).toFixed(3);
+    layers[2].style.opacity = Math.max(0, v - 1).toFixed(3);
+    var near = Math.round(v);
+    labels.forEach(function (l, k) { l.classList.toggle("now", k === near); });
+  }
+  hour.addEventListener("input", setHour);
+  setHour();
+
+  // ---- install tabs ----
+  var tabs = [document.getElementById("tab-win"), document.getElementById("tab-mac")];
+  var panels = [document.getElementById("steps-win"), document.getElementById("steps-mac")];
+  function pick(k) {
+    tabs.forEach(function (t, j) { t.setAttribute("aria-selected", j === k ? "true" : "false"); t.tabIndex = j === k ? 0 : -1; });
+    panels.forEach(function (p, j) { p.hidden = j !== k; });
+  }
+  tabs.forEach(function (t, k) {
+    t.addEventListener("click", function () { pick(k); });
+    t.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { var j = (k + 1) % 2; pick(j); tabs[j].focus(); }
+    });
+  });
+  if (/Mac/.test(navigator.platform || "")) pick(1); else pick(0);
+})();
+</script>
+
+</html>
