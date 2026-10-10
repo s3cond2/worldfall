@@ -309,7 +309,7 @@ footer p { max-width: 60ch; }
 <main>
   <section class="dive" id="dive" aria-labelledby="title">
     <div class="screen">
-      <img class="poster" id="poster" src="frames/f000.webp" alt="A whole WorldBox map seen from above: an island of green land and pink blossom woods round a bay, in a blue sea." fetchpriority="high">
+      <picture><source media="(max-aspect-ratio: 2/3)" srcset="frames/tall/f000.webp"><img class="poster" id="poster" src="frames/f000.webp" alt="A whole WorldBox map seen from above: an island of green land and pink blossom woods round a bay, in a blue sea." fetchpriority="high"></picture>
       <canvas id="reel" aria-hidden="true"></canvas>
       <div class="scrim"></div>
 
@@ -640,37 +640,54 @@ footer p { max-width: 60ch; }
   var stopItems = Array.prototype.slice.call(stops.querySelectorAll("li"));
   var rk = document.getElementById("rk"), rv = document.getElementById("rv"), ralt = document.getElementById("ralt"), rf = document.getElementById("rf");
   var loadingEl = document.getElementById("loading"), lp = document.getElementById("lp");
-  var imgs = new Array(N), ready = new Array(N), loaded = 0;
+  var imgs, ready, loaded, gen = 0;
   var PHASE_STOP = { map: 0, fade: 1, god: 1, magnet: 2, close: 3, dive: 4, eyes: 4, walk: 4 };
   var zMax = N ? FRAMES[0].z : 143, zMin = 10, cMin = 0.9;
 
+  // Two frame sets: full 1280x720, and a 480x720 centre crop for tall (portrait) screens,
+  // which only ever show the middle of each frame anyway. Same pixels on screen, a third of the bytes.
+  var TALL = 480 / 720, dir = "";
+  // On Save-Data connections skip the two finest passes (about a quarter of the frames).
+  var conn = navigator.connection || {}, steps = conn.saveData ? [32, 16, 8, 4] : [32, 16, 8, 4, 2, 1];
+
   // Load in passes, coarse to fine, so any scroll position soon has a nearby frame.
   var order = [], seen = {};
-  [32, 16, 8, 4, 2, 1].forEach(function (step) {
+  steps.forEach(function (step) {
     for (var i = 0; i < N; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); }
   });
   if (N && !seen[N - 1]) order.push(N - 1);
-  var next = 0, inFlight = 0;
+  var total = order.length, next = 0, inFlight = 0;
+
+  function useSet(d) {
+    if (d === dir) return;
+    dir = d; gen++;
+    imgs = new Array(N); ready = new Array(N); loaded = 0; next = 0; inFlight = 0;
+    drawnOnce = false; poster.style.visibility = "";
+    loadingEl.classList.remove("done"); lp.textContent = "0";
+    pump();
+  }
+
   function pump() {
-    while (inFlight < 6 && next < order.length) {
-      (function (i) {
+    while (inFlight < 6 && next < total) {
+      (function (i, g) {
         var img = new Image();
         inFlight++;
         img.onload = function () {
-          var done = function () { ready[i] = true; finish(); };
+          var done = function () { if (g === gen) ready[i] = true; finish(); };
           if (img.decode) img.decode().then(done, done); else done();
         };
         img.onerror = finish;
         function finish() {
+          if (g !== gen) return;
           inFlight--; loaded++;
-          lp.textContent = Math.round(loaded / N * 100);
-          if (loaded >= N) loadingEl.classList.add("done");
-          if (i === 0 || Math.abs(i - shown) < 3) want = true;
+          lp.textContent = Math.round(loaded / total * 100);
+          if (loaded >= total) loadingEl.classList.add("done");
+          if (i === 0 || Math.abs(i - shown) < 3) wake();
           pump();
         }
-        img.src = "frames/" + FRAMES[i].f;
+        img.src = dir + FRAMES[i].f;
         imgs[i] = img;
-      })(order[next++]);
+      })(order[next++], gen);
     }
   }
 
@@ -682,7 +699,8 @@ footer p { max-width: 60ch; }
     H = canvas.height = Math.max(1, Math.round(r.height * dpr));
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    want = true;
+    useSet(r.width / Math.max(1, r.height) <= TALL ? "frames/tall/" : "frames/");
+    wake();
   }
 
   function nearestReady(i) {
@@ -711,7 +729,7 @@ footer p { max-width: 60ch; }
     return lo + (b > a ? (p - a) / (b - a) : 0);
   }
 
-  var target = 0, current = 0, shown = 0, want = true, drawnOnce = false;
+  var target = 0, current = 0, shown = 0, want = true, drawnOnce = false, running = false;
   function progress() {
     var r = dive.getBoundingClientRect();
     var run = r.height - window.innerHeight;
@@ -766,23 +784,30 @@ footer p { max-width: 60ch; }
     stops.classList.toggle("on", p > 0.02);
   }
 
+  // The loop runs only while something changes: scrolling, easing towards the scroll
+  // position, a resize or a newly loaded frame. Once settled it stops until woken.
+  function wake() {
+    want = true;
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+
   function tick() {
-    target = frameAt(progress());
+    var p = progress();
+    target = frameAt(p);
     var d = target - current;
     if (reduce || Math.abs(d) < 0.01) current = target; else current += d * 0.22;
     if (want || Math.abs(d) > 0.0005) {
       draw(current);
-      hud(current, progress());
+      hud(current, p);
       want = false;
     }
-    requestAnimationFrame(tick);
+    if (current !== target) requestAnimationFrame(tick); else running = false;
   }
 
   if (N) {
     resize();
     window.addEventListener("resize", resize);
-    pump();
-    requestAnimationFrame(tick);
+    window.addEventListener("scroll", wake, { passive: true });
   }
 
   // ---- flat map / 3D ----
