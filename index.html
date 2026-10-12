@@ -218,6 +218,25 @@ img.pixel { image-rendering: pixelated; }
 .keys td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: baseline; }
 .keys td:first-child { width: 8.5rem; padding-right: 12px; }
 
+/* update log */
+.log { display: grid; gap: 12px; }
+.ver { border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
+.ver summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 14px 18px; cursor: pointer; list-style: none; }
+.ver summary::-webkit-details-marker { display: none; }
+.ver summary::before { content: "+"; font: 700 1.1rem/1 var(--display); color: var(--sun); width: 14px; }
+.ver[open] summary::before { content: "\2212"; }
+.ver .v { font: 700 1.15rem/1 var(--display); color: var(--sun); }
+.ver .t { font-weight: 700; color: var(--foam); flex: 1 1 16rem; }
+.ver .d { font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); }
+.ver-body { padding: 0 18px 16px 46px; display: grid; gap: 10px; color: var(--mist); font-size: 0.97rem; }
+.ver-body h4 { margin: 8px 0 0; font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); }
+.ver-body ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.ver-body b { color: var(--foam); }
+.ver-body a { color: var(--sun); }
+.ver-body .get { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.ver-body .get span { color: var(--foam); font-weight: 700; }
+@media (max-width: 560px) { .ver-body { padding-left: 18px; } }
+
 footer { padding-block: 44px 64px; border-top: 1px solid var(--line); color: var(--mist); font-size: 0.92rem; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: center; }
 footer p { max-width: 60ch; }
@@ -252,6 +271,7 @@ footer p { max-width: 60ch; }
   <a class="mark" href="#dive">WORLDFALL <span class="tag-alpha">Beta</span></a>
   <nav aria-label="Sections">
     <a class="keep" href="#install">Install</a>
+    <a href="#updates">Updates</a>
     <a href="#dragons">Dragons</a>
     <a href="#compare">3D map</a>
     <a href="#inside">Inside</a>
@@ -305,7 +325,7 @@ footer p { max-width: 60ch; }
             <li><span>Right-click the WorldBox app and choose <b>Show Package Contents</b>.</span></li>
             <li><span>Go to <code>Contents/Resources/Data/StreamingAssets/mods</code> (make the <code>mods</code> folder if it isn't there) and put <code>Worldfall.dll</code> there.</span></li>
             <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
-            <li><span>Restart WorldBox.</span></li>
+            <li><span>Restart WorldBox. On an Apple Silicon Mac, the NeoModLoader version works better.</span></li>
           </ol>
           <ol class="steps" id="steps-nml" role="tabpanel" aria-labelledby="tab-nml" hidden>
             <li><span>Already play with NeoModLoader? The easiest way: subscribe to Worldfall on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener"><b>Steam Workshop</b></a> (Steam asks to add NeoModLoader too), then start WorldBox.</span></li>
@@ -319,23 +339,24 @@ footer p { max-width: 60ch; }
             <p class="eyebrow">Is it safe?</p>
             <ul>
               <li><b>Only download it from this page.</b> The zip holds three files: <code>Worldfall.dll</code>, an install guide and the licence. No installer, no mod loader, no admin rights.</li>
-              <li><b>It never goes online.</b> The mod has no network code at all. It only runs inside WorldBox, and only writes its log, settings and screenshots to WorldBox's own save folder.</li>
+              <li><b>It only goes online when you ask.</b> Only when you host or join a multiplayer game, or browse packs in F2 &gt; Mods. Otherwise it only runs inside WorldBox, and writes its log, settings and screenshots to WorldBox's own save folder.</li>
               <li><b>Why an antivirus might warn.</b> To turn WASD into first-person movement, the mod changes a few of WorldBox's own functions in memory while the game runs. Some antivirus tools flag that technique. Nothing on disk is changed: delete the DLL and the game is back to normal.</li>
               <li><b>Check your download.</b> Compare its SHA-256 with these (Windows: <code>certutil -hashfile Worldfall.zip SHA256</code>), or scan it on virustotal.com.</li>
             </ul>
             <dl class="hashes">
-              <dt>Worldfall.zip</dt><dd><code>981c43e8b9df8f19e28533f640e258bf4fed47b48d67b0c85b6d3d65635e3f8b</code></dd>
-              <dt>Worldfall_NML.zip</dt><dd><code>ba48479d5bae768aacb8c1a03f4b4068f2993e088ea10b0050ef943dc865d51c</code></dd>
-              <dt>Worldfall.dll</dt><dd><code>c5d7bb791aa97c9dd234fe99c2531b839907456a1eec19755b91bc7d82342dc6</code></dd>
+              <dt>Worldfall.zip</dt><dd><code>364cf9f8c070ff2fb3d34c0649b1ac01541d6907df8b65d024109222a2219762</code></dd>
+              <dt>Worldfall_NML.zip</dt><dd><code>b8285798f17fa07fdc7c51de6f7bb3489322759c75a7946f47159ce307c6ff5e</code></dd>
+              <dt>Worldfall.dll</dt><dd><code>d6b07620507f25a69e1d7e164e887f2b8dd9118f72118410621efafddda9458f</code></dd>
             </dl>
           </div>
           <p class="note">This is a beta build, so you may run into bugs; reports on Discord help. WorldBox also turns Experimental Mode off after every game update: if the mod stops loading, turn it back on and restart.</p>
           <div class="ctas">
-            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download beta 0.9.4 (Worldfall.zip, 51 MB)</a>
-            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 51 MB)</a>
+            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download beta 0.9.5 (Worldfall.zip, 44 MB)</a>
+            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 44 MB)</a>
             <a class="btn ghost" id="workshop" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop (NeoModLoader)</a>
             <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
           </div>
+          <p class="note">Need an older version? Every earlier release is in the <a href="#updates">update log</a> below.</p>
         </div>
         <div>
           <table class="keys">
@@ -344,14 +365,66 @@ footer p { max-width: 60ch; }
               <tr><td><kbd>G</kbd></td><td>Take control of the selected creature (and let go again)</td></tr>
               <tr><td>Mouse, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Look around, walk or swim; hold <kbd>Shift</kbd> to sprint</td></tr>
               <tr><td>Left click</td><td>Attack, or hold on a tree, rock or crop to chop, mine or harvest</td></tr>
-              <tr><td><kbd>E</kbd></td><td>Talk, go into a house, board a boat</td></tr>
+              <tr><td>Right click</td><td>Guard; raise it as a blow lands to parry</td></tr>
+              <tr><td><kbd>E</kbd></td><td>Talk, open a door, board a boat. Hold it for everything else</td></tr>
+              <tr><td>Hold <kbd>Q</kbd></td><td>Tools: torch, compass, food, bandage</td></tr>
+              <tr><td><kbd>Tab</kbd></td><td>Your bag, crafting, magic and people</td></tr>
+              <tr><td><kbd>M</kbd></td><td>The world: map, news, war, orders, council</td></tr>
+              <tr><td><kbd>Y</kbd></td><td>Plan your town</td></tr>
               <tr><td><kbd>X</kbd></td><td>Your kind's own ability</td></tr>
-              <tr><td><kbd>=</kbd></td><td>Leap into the creature under the crosshair</td></tr>
-              <tr><td><kbd>V</kbd></td><td>On the map: the 3D god view on or off</td></tr>
+              <tr><td>Middle click</td><td>Take over the creature you look at</td></tr>
+              <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>On the map: the 3D god view; fly a free camera</td></tr>
               <tr><td><kbd>F1</kbd> <kbd>F2</kbd></td><td>All the controls; the mod's settings</td></tr>
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="updates">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Update log</p>
+        <h2>What's new</h2>
+        <p>Every public version, newest first. Older versions stay downloadable here if you need one; the newest is recommended.</p>
+      </div>
+      <div class="log">
+        <details class="ver" open>
+          <summary><span class="v">0.9.5</span><span class="t">Houses you live in, a village of your own</span><span class="d">2026-10-12</span></summary>
+          <div class="ver-body">
+            <p>Houses are real rooms now, with the people who live there, doors, locks and curtains. Sit, sleep and fight in them. Found and plan your own village, fly a free camera over the world, and play with friends in early multiplayer. Still early and partly untested: multiplayer, VR, the weapon models, controllers and the Steam Deck.</p><h4>New</h4><ul><li><b>Real rooms.</b> Human houses have rooms the size of the house outside, and the bigger ones have an upstairs. Walk straight in through the door. On the GPU, windows and the open door show the town outside.</li><li><b>Life at home.</b> The people in a room are the ones the game has inside. Sleepers lie in bed, and the rest sit by the fire or at the table. Doors swing, chimneys smoke, and windows are lit while someone is up.</li><li><b>Doors and locks.</b> Press <kbd>E</kbd> at a door to open or shut it, or walk into it. A locked home opens only to family and the monarch. Lock yours from its Home card.</li><li><b>Curtains.</b> <kbd>E</kbd> at a window draws its curtains. Hold <kbd>E</kbd> for every curtain in the room. With every curtain drawn and the door shut, the street can't see what you do.</li><li><b>Sleep to save.</b> Sleeping in a bed you may use, or in a bedroll outdoors, saves the world. Loading the save puts you back in the same body.</li><li><b>Fights indoors.</b> Houses are no longer safe: enemies follow you in. Fight in any room with any weapon, and jump in rooms too.</li><li><b>Sitting and kneeling.</b> Tap <kbd>P</kbd> to sit, hold <kbd>P</kbd> for poses, or press <kbd>E</kbd> on a seat. Sitting by a fire restores stamina faster. Kneeling to your king pleases him.</li><li><b>Your own village.</b> <kbd>Y</kbd> opens town planning. Found a village round a bonfire, place the game's buildings, drag rows of homes along a street and plan walls. Townsfolk carry materials to the plans.</li><li><b>Building by hand.</b> Strike a site with a hammer to build it. Idle townsfolk come to help.</li><li><b>Taxes.</b> Rulers are paid the game's taxes once a season. A king sets the rate on the Council page.</li><li><b>Free flight.</b> <kbd>F</kbd> on the map flies a camera anywhere. Hold <kbd>F</kbd> in first person to rise out of the body.</li><li><b>Multiplayer (early).</b> <kbd>F2</kbd> &gt; Multiplayer hosts your world for up to 8 players, with chat, parties and Steam voice. Joining over Steam is untested.</li><li><b>Action and tool wheels.</b> Hold <kbd>E</kbd> for talk, insult, steal, star, take over or hijack. Hold <kbd>Q</kbd> for the torch, compass, food or a bandage.</li><li><b>Torch and compass.</b> Light your torch at a fire and hold it out; rain puts it out. The compass points to your nearest task.</li><li><b>Quest levels.</b> After ten town quests, put a site of the dead to rest. After fifteen more, hold the town against a raid. Rewards include traits, weapons with powers and spells.</li><li><b>Magic page and learned moves.</b> <kbd>Tab</kbd> &gt; Magic picks what <kbd>X</kbd> casts. Hard quests teach a dodge, a heavy blow, a lunge or a jump attack.</li><li><b>Faces and regalia.</b> People of the four peoples look like individuals. Human kings, captains, soldiers and guards wear their realm's colours, and town halls fly its flag.</li><li><b>Weapon models (early).</b> All 44 metal weapons in the game's metals. Mythril and adamantine glow at night.</li><li><b>Wonders, trees and rocks.</b> Waypoints, spawners, brains and mage towers in 3D. Soft tree crowns, burnt trees that smoulder, and rocks that lose chunks as they are mined.</li><li><b>Sun and shadows.</b> On the GPU, the sun follows the seasons, the land casts soft shadows and the moon has phases. Shadow settings, a dark fantasy look, quality presets and a frame counter in <kbd>F2</kbd> &gt; Graphics.</li><li><b>Workshop packs.</b> <kbd>F2</kbd> &gt; Mods loads packs of models, sounds and text while you play.</li><li><b>Controllers and the Steam Deck (early).</b> <kbd>F2</kbd> &gt; Controls &gt; Controller. Not yet tried on a real Deck.</li><li><b>Also:</b> four bigger world sizes, the crown is offered before you're made king, build a boat when stranded, your house on the maps, <kbd>F1</kbd> help, Brazilian Portuguese and Russian.</li></ul><h4>Changed</h4><ul><li>News and Council are pages of <kbd>M</kbd>, so <kbd>K</kbd> and <kbd>U</kbd> are gone. Middle click takes over a creature and <kbd>C</kbd> pings. <kbd>F1</kbd> lists every key.</li><li><kbd>F2</kbd> has eight tabs: Graphics, Controls, Game, Sound, VR, Character, Multiplayer and Mods.</li><li>Indoors is quiet, and rain drums on the roof. Creature sounds carry as far as they would for someone standing there.</li><li>Homes grow at most one size a day. One person has three deals a day for you.</li><li>Rooms on the GPU are about as fast as outdoors, and busy towns draw 15-25% faster. New options for very big worlds.</li><li>On Apple Silicon Macs, use the NeoModLoader version.</li></ul><h4>Fixed</h4><ul><li>First person froze for up to two seconds about once a minute.</li><li>The sound engine could crash the game indoors or with 3D sound on.</li><li>First person could end when a building in view turned to ruin.</li><li>Others' arrows and shots passed through houses and walls. Several attackers caused endless parries.</li><li>Bodies blocked doorways and could shut you in a room.</li><li>Kills with the game's spells didn't count for you, and starving counted as blows against you.</li><li>Bands of shadow crawled over walls and roofs, and meteors slid in from the side.</li><li>Many more fixes to towns, the bag, crafting, quests, packs and controls.</li></ul>
+            <p class="get"><span>Download:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.5/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.5/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
+          </div>
+        </details>
+        <details class="ver">
+          <summary><span class="v">0.9.4</span><span class="t">VR, the inventory and the king's war</span><span class="d">2026-10-08</span></summary>
+          <div class="ver-body">
+            <p>Play in a VR headset, carry a real inventory with a hotbar, guard and parry, and command a king's armies like a strategy game. Also snow, tornadoes, seasons, lock-in runs, peace terms, Chinese and Korean. Version 0.9.3 was never released on its own, so this covers both.</p><h4>New</h4><ul><li><b>VR headsets (early).</b> Play first person through OpenXR (Quest Link or Air Link, SteamVR, Virtual Desktop, Windows Mixed Reality) from <kbd>F2</kbd> &gt; VR. Your arms follow the controllers.</li><li><b>Inventory.</b> <kbd>Tab</kbd> shows you as a 3D figure in what you wear, with a slot bag, spare gear and crafting. Hold <kbd>Tab</kbd> to use it while you walk.</li><li><b>Guard and parry.</b> Hold the right mouse button to block. Raise it as a blow lands to parry. Enemy blows wind up where you can see them.</li><li><b>King's orders.</b> Select warriors and right-click to send them. Flags carry Attack, Wait, Destroy, Kill or Pillage orders. Control groups jump between fronts, and battles can be watched in 3D.</li><li><b>Snow and storms.</b> Snow builds up and melts, tornadoes hang from their own storms, and rain splashes round you.</li><li><b>Hotbar.</b> The bag's bottom row. The mouse wheel or <kbd>1</kbd> to <kbd>8</kbd> picks what's in your hand.</li><li><b>Workbench.</b> Your house's tier sets what you can craft at home.</li><li><b>Bandages and salves.</b> Craft them and heal yourself or anyone hurt.</li><li><b>Looting and hunts.</b> Take what the fallen carried, butcher carcasses for meat, and hunt herds out on the map.</li><li><b>Armor in 3D.</b> All of the game's armor, fitted to every body. Zombies wear torn clothes. The flame sword burns as you swing it.</li><li><b>Meeting people.</b> Say hello with <kbd>E</kbd> to learn a stranger's name. Contacts sit beside the inventory.</li><li><b>Courting.</b> Win someone's heart with the right words and courting tasks.</li><li><b>Teachers and trials.</b> Learn traits for a fee and a trial. Smiths forge new wares each dawn.</li><li><b>The daily board.</b> Up to nine contracts a town every dawn.</li><li><b>The war map.</b> Every realm with its borders, alliances and wars. Troops can board ships.</li><li><b>Peace terms.</b> Peace takes both sides: grudges, envoys, gold or towns.</li><li><b>The royal court.</b> Five councillors with bonuses, and holding court from the throne.</li><li><b>Ship hijack.</b> <kbd>Shift</kbd>+<kbd>E</kbd> takes a ship.</li><li><b>Lock-in runs.</b> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> locks you into one life for a scored run. Destroy a real rival as king to become immortal.</li><li><b>Towns.</b> Halls and the capital keep in 3D, standing with each town and realm, seasons, and a house plot of your own.</li><li><b>World.</b> Effects for every biome, darker nights with fireflies, waves on the open sea, and the whole map in view.</li><li><b>3D sound.</b> Sounds come from where they happen.</li><li><b>Sword slicing.</b> A killing blow from a top-tier sword cuts the body in two.</li><li><b>Walking.</b> People walk with planted feet and look at you. Stairs and roofs can be walked on, and you can climb mountains.</li><li><b>Languages.</b> Simplified Chinese and Korean.</li></ul><h4>Changed</h4><ul><li>Right click is the guard. The kick is gone.</li><li>The people list moved into the <kbd>Tab</kbd> inventory.</li><li>War flags are planted with <kbd>Shift</kbd> + right click.</li><li>The GPU renderer is the default.</li><li>Looking up and down tilts the camera instead of stretching the picture.</li></ul><h4>Fixed</h4><ul><li>Enemies could hit you through the walls of a house or mine.</li><li>Harbor piers drained stamina until you drowned.</li><li>Friendly fire off didn't spare your own people.</li><li>Renamed kingdoms and towns kept their old names.</li><li>The creature you control could starve in seconds.</li></ul>
+            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.4/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.4/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
+          </div>
+        </details>
+        <details class="ver">
+          <summary><span class="v">0.9.2</span><span class="t">Trade, quests and the king's war</span><span class="d">2026-10-06</span></summary>
+          <div class="ver-body">
+            <p>Money and trade, quests that are explained before you take them, a war map with six fronts, careers in the army and controls for phones. Also the first NeoModLoader and Steam Workshop release.</p><h4>New</h4><ul><li><b>Trade.</b> Buy and sell with anyone. Prices follow what things are worth and who you are dealing with. Your coin and gold show on screen.</li><li><b>Armories and guards.</b> Buy weapons and armor from a town's armory, hire guards who follow you and fight for you, or pay a realm for protection.</li><li><b>Quest briefings.</b> Quest givers think it over, explain the job, answer your questions about it and sum it up before you agree.</li><li><b>Six war flags.</b> As king, plant up to six numbered flags on the war map <kbd>M</kbd> and send a separate band to hold each one.</li><li><b>Fleet orders.</b> Kings send their ships to a spot and choose what they fire at.</li><li><b>War chest.</b> The king's strikes and storms are paid for with the kingdom's kills, from bandit raids up to an atomic bomb.</li><li><b>Enlist.</b> Join the army or lead settlers out to found a new village. Soldiers see the king's orders and their captain on <kbd>M</kbd>, and can be promoted to captain.</li><li><b>Leave or join a town.</b> Leave your town for good, or ask a leader to let you move in.</li><li><b>Character tab.</b> In <kbd>F2</kbd>, give yourself weapons, armor and traits, turn friendly fire on or off, and mark foes and friends.</li><li><b>Family follows you.</b> Your partner and children come with you, and move with you if you change towns.</li><li><b>People you have met.</b> A list of everyone you have talked to, with when you met them.</li><li><b>World news.</b> Press <kbd>U</kbd> for what is happening across the world, with an alert when your realm is attacked.</li><li><b>Headshots.</b> Your own aimed blows and shots hit harder on the head. Fights between other creatures are unchanged.</li><li><b>Blocks and parries shown.</b> Blocked, dodged and parried hits are marked, so a hit never fails without a reason.</li><li><b>Phones and touch screens.</b> A touch stick and buttons, landscape in first person, and lighter settings on phones.</li><li><b>NeoModLoader version.</b> A separate download for NeoModLoader players, also on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>.</li></ul><h4>Changed</h4><ul><li>First-person hands match your character's skin tone.</li></ul><h4>Fixed</h4><ul><li>Clicking Goodbye at the end of a talk no longer punches the person you were talking to.</li><li>Choosing Goodbye with a number key no longer leaves you unable to move.</li></ul>
+            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.2/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.2/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
+          </div>
+        </details>
+        <details class="ver">
+          <summary><span class="v">0.9.1</span><span class="t">Eating</span><span class="d">2026-10-05</span></summary>
+          <div class="ver-body">
+            <p>A small update on the same day as the first beta.</p><h4>New</h4><ul><li><b>Eat.</b> Press <kbd>J</kbd> to eat food your kind likes from your bag, your favorite first, or a meal from your town's stores.</li></ul>
+            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-2026-10-05.2/Worldfall.zip">Worldfall.zip</a></p>
+          </div>
+        </details>
+        <details class="ver">
+          <summary><span class="v">0.9.0</span><span class="t">First public beta</span><span class="d">2026-10-05</span></summary>
+          <div class="ver-body">
+            <p>The first public build of Worldfall.</p><h4>New</h4><ul><li><b>First person in any creature.</b> Select it and press <kbd>G</kbd>, or zoom all the way in from the map. Mouse to look, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move.</li><li><b>The world in 3D.</b> Built live from your map: land, coasts, trees, every people's own towns and the rooms inside their houses.</li><li><b>3D god view.</b> Press <kbd>V</kbd> on the map to see the whole world in 3D under the game's own buttons and powers.</li><li><b>Talk to anyone.</b> Press <kbd>E</kbd> to ask about their work, family, the news and their king, and to take on quests.</li><li><b>Combat.</b> Melee with every weapon, bows, a pump shotgun, kicks, and your kind's own ability on <kbd>X</kbd>.</li><li><b>Dragons and Crabzilla.</b> Dragons fly as jointed 3D models. Become Crabzilla and fire its claw lasers.</li><li><b>Ships.</b> Take the helm and sail, or fire a warship's cannons.</li><li><b>Sky and weather.</b> A full day and night, northern lights, comets, meteor showers, storms, wind and rain.</li><li><b>Binoculars, minimap and pings.</b> Hold <kbd>Z</kbd> to look up to 12 times closer. <kbd>N</kbd> shows a minimap with a ping wheel.</li><li><b>GPU renderer.</b> Draws the 3D world on the graphics card for higher frame rates.</li><li><b>Mac support.</b> Runs on Intel and Apple Silicon Macs.</li></ul>
+            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-2026-10-05/Worldfall.zip">Worldfall.zip</a></p>
+          </div>
+        </details>
       </div>
     </div>
   </section>
@@ -374,12 +447,12 @@ footer p { max-width: 60ch; }
       <div>
         <p class="eyebrow">Added lately</p>
         <ul class="lately">
-          <li>VR headsets: play first person through OpenXR, with your hands on the controllers</li>
-          <li>Inventory on <kbd>Tab</kbd> with your 3D figure, a hotbar, crafting at your workbench and bandages</li>
-          <li>Guard and parry on the right mouse button</li>
-          <li>Kings command like a strategy game: flags with orders, control groups, battles watched in 3D</li>
-          <li>Snow that builds up, tornadoes, darker nights with fireflies and waves on the open sea</li>
-          <li>Armor in 3D, the flame sword, town halls and the capital keep</li>
+          <li>Real rooms in houses, with the family at home, doors, locks and curtains</li>
+          <li>Sit and kneel with <kbd>P</kbd>, sleep in a bed to save, and fight indoors</li>
+          <li>Your own village: plan it with <kbd>Y</kbd> and build it with a hammer</li>
+          <li>Free flight with <kbd>F</kbd>, a torch and a compass in hand</li>
+          <li>Multiplayer for up to 8 players (early)</li>
+          <li>Seasonal sun, soft shadows, moon phases and every metal weapon modelled (early)</li>
         </ul>
       </div>
     </div>
@@ -388,9 +461,9 @@ footer p { max-width: 60ch; }
   <section class="band" id="next">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Coming in the next update</p>
+        <p class="eyebrow">New in 0.9.5</p>
         <h2>Homes, villages and open war</h2>
-        <p>Pictures from the build being tested now. None of this is in the current download yet.</p>
+        <p>All of this is in the current download.</p>
       </div>
       <div class="grid">
         <figure>
@@ -436,7 +509,7 @@ footer p { max-width: 60ch; }
   <section class="band" id="war">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Coming in the next update</p>
+        <p class="eyebrow">New in 0.9.5</p>
         <h2>War, filmed in the game</h2>
         <p>Two kingdoms at war on open ground, recorded straight from the game with the mod running: a free-flying camera, the 3D god view, a low pass at golden hour, and first person in the line.</p>
       </div>
@@ -464,7 +537,7 @@ footer p { max-width: 60ch; }
   <section class="band" id="wonders">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Also coming in the next update</p>
+        <p class="eyebrow">Also new in 0.9.5</p>
         <h2>Wonders, rebuilt</h2>
         <p>The game's waypoints, spawners, brains and mage towers stand in 3D at one and a half times their sprite's height, with light, motion and their own sounds.</p>
       </div>
@@ -558,7 +631,7 @@ footer p { max-width: 60ch; }
       <div class="head">
         <p class="eyebrow">Graphics settings</p>
         <h2>Sharp, or easy on your PC</h2>
-        <p>Pick the picture's size in F2, from 640×360 to 1920×1080. The next update adds a quality preset from Low to Ultra: Low draws no shadows and a shorter view, for older and laptop graphics. Drag across the picture: the same street at the same moment, both straight from the game.</p>
+        <p>Pick the picture's size in F2, from 640×360 to 1920×1080. Version 0.9.5 adds a quality preset from Low to Ultra: Low draws no shadows and a shorter view, for older and laptop graphics. Drag across the picture: the same street at the same moment, both straight from the game.</p>
       </div>
       <figure style="margin:0">
         <div class="cmp" id="cmp-q">
@@ -701,7 +774,7 @@ footer p { max-width: 60ch; }
       <div class="head">
         <p class="eyebrow">Every biome</p>
         <h2>Candy canes to crystal spires</h2>
-        <p>All 22 of WorldBox's biomes have their own ground, trees and plants in 3D, and their own air: mist, embers, petals or sparks in the light. These are from one test world, a few steps apart, in the build being tested now.</p>
+        <p>All 22 of WorldBox's biomes have their own ground, trees and plants in 3D, and their own air: mist, embers, petals or sparks in the light. These are from one test world, a few steps apart, in version 0.9.5.</p>
       </div>
       <div class="strip" tabindex="0" aria-label="Biome screenshots, scroll sideways">
         <figure><div class="shot"><img src="shots/biome_mushroom.webp" alt="Giant red-capped mushrooms on green ground." loading="lazy"></div><figcaption>Mushroom</figcaption></figure>
