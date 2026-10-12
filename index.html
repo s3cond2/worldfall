@@ -129,6 +129,10 @@ figcaption { font-size: var(--step--1); color: var(--mist); margin-top: 10px; }
 .cmp .tag.l { left: 14px; }
 .cmp .tag.r { right: 14px; }
 img.pixel { image-rendering: pixelated; }
+.clips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
+.clips figure { margin: 0; }
+.clip { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 6px; border: 1px solid var(--line); background: var(--sea); }
+@media (max-width: 760px) { .clips { grid-template-columns: minmax(0, 1fr); } }
 .cmp input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
 .cmp:has(input:focus-visible) { outline: 3px solid var(--sun); outline-offset: 3px; }
 
@@ -424,6 +428,34 @@ footer p { max-width: 60ch; }
         <figure>
           <div class="shot"><img src="shots/next_burnt.webp" alt="A burnt forest at night, charred trunks still glowing." loading="lazy"></div>
           <figcaption><h3>Burnt forests</h3><p>Burnt trees stand as charred skeletons that smoulder and crumble to ash.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="war">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Coming in the next update</p>
+        <h2>War, filmed in the game</h2>
+        <p>Two kingdoms at war on open ground, recorded straight from the game with the mod running: a free-flying camera, the 3D god view, a low pass at golden hour, and first person in the line.</p>
+      </div>
+      <div class="clips">
+        <figure>
+          <video class="clip" src="clips/war_1_flyover.mp4" poster="clips/war_1_flyover.webp" controls muted loop playsinline preload="none" aria-label="Two armies clash on an autumn field by a river, the free camera sweeping over them."></video>
+          <figcaption>A free camera flying over the battle.</figcaption>
+        </figure>
+        <figure>
+          <video class="clip" src="clips/war_2_god_view.mp4" poster="clips/war_2_god_view.webp" controls muted loop playsinline preload="none" aria-label="The battle seen from high above in the 3D god view, the river beside the field."></video>
+          <figcaption>From the 3D god view.</figcaption>
+        </figure>
+        <figure>
+          <video class="clip" src="clips/war_3_low_pass_golden_hour.mp4" poster="clips/war_3_low_pass_golden_hour.webp" controls muted loop playsinline preload="none" aria-label="A low camera passing the battle line through autumn trees at golden hour, fires in the grass."></video>
+          <figcaption>A low pass at golden hour.</figcaption>
+        </figure>
+        <figure>
+          <video class="clip" src="clips/war_4_first_person_melee.mp4" poster="clips/war_4_first_person_melee.webp" controls muted loop playsinline preload="none" aria-label="First person in the melee: soldiers in helmets and armour all round, flames close by."></video>
+          <figcaption>In the line, first person.</figcaption>
         </figure>
       </div>
     </div>
