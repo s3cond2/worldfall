@@ -344,17 +344,17 @@ footer p { max-width: 60ch; }
               <li><b>Check your download.</b> Compare its SHA-256 with these (Windows: <code>certutil -hashfile Worldfall.zip SHA256</code>), or scan it on virustotal.com.</li>
             </ul>
             <dl class="hashes">
-              <dt>Worldfall.zip</dt><dd><code>d16be46e548c0b0ed6d539895fc99759842d3070559d0f39fa147beed084dd88</code></dd>
-              <dt>Worldfall_NML.zip</dt><dd><code>5508b94b1a78830f19caadb499e814ffdda37207bb75e7731e42354adba7c08b</code></dd>
-              <dt>Worldfall_Android.zip</dt><dd><code>27dcca081b5e4bc7a7935cd9f4acc7f5e8e0a0a73e46771cef7345dc46ac3fbe</code></dd>
-              <dt>Worldfall.dll</dt><dd><code>57143960d388a629c34fd2ef464a2b65a501a404605e091d99d8064cde214007</code></dd>
+              <dt>Worldfall.zip</dt><dd><code>94367dce498a538dca3253bf6b1f46dcf62a838161b3170f6f41154c9d9d414b</code></dd>
+              <dt>Worldfall_NML.zip</dt><dd><code>0a29de9fa5038b3e437934451da8fb2aecd31beccc2896f45cfb8a1a2f9b6ddf</code></dd>
+              <dt>Worldfall_Android.zip</dt><dd><code>b8af3df0d6e683879ed8ee8388677292feb4a82eccec9dabb5d9119794ccc2bc</code></dd>
+              <dt>Worldfall.dll</dt><dd><code>b55336ce6f164f01bd0b890cc0143a2e3bcf936bbc1bf268ffb4a06b2514fdf2</code></dd>
             </dl>
           </div>
           <p class="note">This is a beta build, so you may run into bugs; reports on Discord help. WorldBox also turns Experimental Mode off after every game update: if the mod stops loading, turn it back on and restart.</p>
           <div class="ctas">
-            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download beta 0.9.7 (Worldfall.zip, 44 MB)</a>
-            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 44 MB)</a>
-            <a class="btn ghost" id="download-android" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_Android.zip">Android version (Worldfall_Android.zip, 43 MB, early)</a>
+            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download beta 0.9.8 (Worldfall.zip, 44 MB)</a>
+            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 45 MB)</a>
+            <a class="btn ghost" id="download-android" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_Android.zip">Android version (Worldfall_Android.zip, 44 MB, early)</a>
             <a class="btn ghost" id="workshop" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop (NeoModLoader)</a>
             <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
           </div>
@@ -393,6 +393,13 @@ footer p { max-width: 60ch; }
       </div>
       <div class="log">
         <details class="ver" open>
+          <summary><span class="v">0.9.8</span><span class="t">Easier joining, lightning</span><span class="d">2026-10-13</span></summary>
+          <div class="ver-body">
+            <p>Multiplayer is much easier to join: a short code, Steam invites, no port forwarding and an update button when versions differ. Lightning strikes are redrawn from the cloud to the ground.</p><h4>New</h4><ul><li><b>Join codes.</b> Hosting shows a short code with a Copy button. A friend types it in to join. The code holds your address, so nothing else is needed.</li><li><b>Steam invites.</b> Steam players join through Steam, with an Invite friends button on the host's card.</li><li><b>Same network.</b> Worlds hosted on your home network are listed by themselves. Phones and Macs join from this list or with a code.</li><li><b>Update and join.</b> When two players are on different versions, the older one can update from where they got the mod (Steam Workshop or this page) and restart straight into the world.</li><li><b>Lightning.</b> A leader feels down from the cloud, then a branching white stroke lands in a blue glow, with sparks and electricity over the ground, two fainter restrikes and a glowing scorch. Far strikes still show as a bright fork.</li></ul><h4>Changed</h4><ul><li><b>No port forwarding.</b> The host's router port is opened automatically where the router allows it (UPnP).</li><li><b>Public network warning.</b> The host card warns when Windows treats your network as Public, which blocks others from joining.</li><li><b>Droppings.</b> Animal droppings are a soft brown coil instead of something that looked like stones.</li></ul><h4>Fixed</h4><ul><li>A refused player only saw "Connection closed". The restart after syncing mods didn't wait for the game to close.</li></ul>
+            <p class="get"><span>Download:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall_NML.zip">Worldfall_NML.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall_Android.zip">Worldfall_Android.zip</a> (early)</p>
+          </div>
+        </details>
+        <details class="ver">
           <summary><span class="v">0.9.7</span><span class="t">Faster rooms, storage, sharper weapons</span><span class="d">2026-10-12</span></summary>
           <div class="ver-body">
             <p>Rooms draw much faster when you face a window, houses you own have storage, your family follows you indoors, and the weapon models are reworked with embers on glowing weapons.</p><h4>New</h4><ul><li><b>Storage.</b> In a house you own, press <kbd>E</kbd> at a chest, crate, barrel or sack to store items and gear. Crafting at home can use what is stored.</li><li><b>Glowing weapons.</b> Mythril, adamantine and magic weapons in your hands shed embers or sparks, more when you swing.</li></ul><h4>Changed</h4><ul><li><b>Faster rooms.</b> Facing a window in a house costs far less: about twice the frame rate on a big world.</li><li><b>Weapon models.</b> Axes, spears, swords, hammers, bows and staffs reworked to match the game's icons more closely, with more detail on every metal.</li><li><b>Family comes in.</b> Family set to Follow walk into the house after you. A locked door also lets in your household and the house's residents.</li><li><b>Sleeping.</b> The sleep prompt shows only when you stand at a bed and face it.</li></ul><h4>Fixed</h4><ul><li>Someone who gave you a courting task could be married off by the game while the task ran.</li><li>On Apple Silicon Macs with both the website and Workshop copies installed, the website copy now steps aside for the NeoModLoader one.</li><li>The mod no longer crashes the game while loading on a Mac. 3D sound stays off on macOS, Apple Silicon Macs start at a sharper picture, and the dark blocks and magenta specks around the sun are gone.</li><li>A crash in fmodstudio.dll while sounds started and stopped.</li><li>In the largest human houses, a window in the wall between the main room and the side room showed the street with a room behind it.</li><li>Arrows stuck in a wall, house or tree stayed after it was destroyed. A joining player's power on <kbd>X</kbd> did nothing in the host's world.</li></ul>
