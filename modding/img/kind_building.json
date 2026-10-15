@@ -1,0 +1,1 @@
+{"w": 1600, "h": 1000, "marks": [{"t": "poly", "pts": [[0.4368, 0.6722], [0.606, 0.598], [0.5003, 0.4793], [0.331, 0.5535]]}, {"t": "dot", "p": [0.4685, 0.5758], "text": "origin: middle of the footprint", "big": true, "side": "below"}, {"t": "arrow", "a": [0.5906, 0.7128], "b": [0.6347, 0.7622], "text": "front, door side: -Y", "c": "y"}]}

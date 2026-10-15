@@ -1,0 +1,1 @@
+{"w": 1600, "h": 1000, "marks": [{"t": "arrow", "a": [0.3273, 0.721], "b": [0.2325, 0.7305], "text": "bow: -Y", "c": "y"}, {"t": "dot", "p": [0.5274, 0.7484], "text": "origin: middle, at the waterline", "big": true, "side": "below"}, {"t": "label", "p": [0.5274, 0.0968], "text": "length 8.2 m", "sub": "info length"}]}

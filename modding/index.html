@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Making models · Worldfall</title>
+<meta name="description" content="How to replace Worldfall's 3D models with your own: sizes, axes, parts, materials, Blender export settings, testing and publishing a pack on the Steam Workshop.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap">
+<style>
+/* The main page's look (night sea, golden sun), for a page that is read and looked things up in. */
+:root {
+  --sea-deep: #0a1828;
+  --sea: #10263c;
+  --sea-lift: #183a5a;
+  --foam: #eef2e8;
+  --mist: #9fb5c0;
+  --sun: #ffc54a;
+  --grass: #8cd457;
+  --red: #ff6b5e;
+  --blue: #62a8ff;
+  --shade: rgba(5, 12, 20, 0.72);
+  --line: rgba(238, 242, 232, 0.13);
+  --display: "Pixelify Sans", "Courier New", monospace;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --pixel: "Silkscreen", "Courier New", monospace;
+  --mono: ui-monospace, Consolas, "Cascadia Mono", monospace;
+  --step--1: 0.84rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3rem;
+  --step-2: clamp(1.6rem, 1.2rem + 1.6vw, 2.35rem);
+  --step-3: clamp(2.6rem, 1.6rem + 4.5vw, 5rem);
+  --gutter: clamp(16px, 4vw, 48px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 76px; }
+body { margin: 0; background: var(--sea-deep); color: var(--foam); font: 400 var(--step-0)/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+a { color: var(--sun); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+code, kbd, pre { font-family: var(--mono); }
+code { font-size: 0.88em; background: var(--sea); padding: 1px 6px; border-radius: 3px; overflow-wrap: anywhere; }
+kbd { font: 400 0.72em/1 var(--pixel); padding: 3px 6px 2px; border-radius: 3px; background: var(--sea-lift); color: var(--foam); border-bottom: 2px solid #0a1828; white-space: nowrap; }
+.eyebrow { font: 400 0.72rem/1.2 var(--pixel); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sun); }
+
+/* top bar */
+.bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 20px; padding: 14px var(--gutter); background: rgba(10, 24, 40, 0.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+.mark { font: 700 1.15rem/1 var(--display); color: var(--foam); text-decoration: none; letter-spacing: 0.04em; white-space: nowrap; }
+.tag-alpha { display: inline-block; vertical-align: 2px; margin-left: 6px; font: 400 0.58rem/1 var(--pixel); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 6px 3px; border-radius: 3px; background: var(--sun); color: #1d1405; }
+.bar nav { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; }
+.bar nav a { color: var(--foam); text-decoration: none; font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.06em; opacity: 0.85; }
+.bar nav a:hover { opacity: 1; color: var(--sun); }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 700 0.95rem/1 var(--body); text-decoration: none; padding: 11px 16px; border-radius: 4px; background: var(--sun); color: #1d1405; box-shadow: 0 3px 0 #9a6a10; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #9a6a10; }
+.btn.ghost { background: transparent; color: var(--foam); box-shadow: inset 0 0 0 2px var(--line); }
+
+/* layout */
+.wrap { width: min(1180px, 100%); margin: 0 auto; padding-inline: var(--gutter); }
+.band { padding-block: clamp(56px, 9vh, 104px); }
+.band + .band { border-top: 1px solid var(--line); }
+.head { display: grid; gap: 12px; max-width: 46rem; margin-bottom: clamp(24px, 4vh, 40px); }
+.head h2 { font-size: var(--step-2); }
+.head p { color: var(--mist); max-width: 62ch; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 52px); align-items: start; }
+.prose { display: grid; gap: 14px; max-width: 64ch; }
+.prose p, .prose li { color: var(--foam); }
+.quiet { color: var(--mist); }
+h3 { font-size: 1.3rem; letter-spacing: 0.01em; }
+
+/* hero */
+.hero { padding-block: clamp(48px, 9vh, 96px) clamp(40px, 7vh, 72px); }
+.hero .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; }
+.hero h1 { font-size: 80px; line-height: 1; }
+@media (max-width: 640px) { .hero h1 { font-size: 48px; } }
+.hero .lede { font-size: var(--step-1); line-height: 1.45; max-width: 32rem; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.facts li { font: 400 0.66rem/1 var(--pixel); letter-spacing: 0.05em; padding: 8px 10px 7px; border: 1px solid var(--line); border-radius: 3px; background: var(--sea); color: var(--foam); }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.kitnote { font-size: var(--step--1); color: var(--mist); max-width: 34rem; }
+
+/* pictures */
+figure { margin: 0; }
+.shot { border-radius: 6px; overflow: hidden; background: var(--sea); border: 1px solid var(--line); }
+.shot img { width: 100%; height: auto; }
+figcaption { font-size: var(--step--1); color: var(--mist); margin-top: 10px; }
+.diagram { position: relative; background: radial-gradient(ellipse at 50% 45%, #2a323b 0%, #0d1014 75%); overflow: hidden; }
+.diagram img { width: 100%; height: auto; }
+.diagram svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.diagram text { font-family: var(--serif); font-weight: 700; paint-order: stroke; stroke: #07090b; stroke-linejoin: round; }
+.diagram text.sub { font-weight: 400; fill: var(--mist); }
+.blend { border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.pair { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+
+/* steps */
+.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 16px; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: baseline; }
+.steps > li::before { content: counter(s); font: 700 1.2rem/1 var(--display); color: var(--sun); }
+.steps b { color: var(--foam); }
+.note { padding: 14px 16px; border-left: 3px solid var(--sun); background: var(--sea); border-radius: 0 4px 4px 0; color: var(--mist); font-size: 0.97rem; }
+.note b { color: var(--foam); }
+.warn { border-left-color: var(--red); }
+
+/* walkthroughs */
+.walk { display: grid; gap: clamp(22px, 3vw, 34px); }
+.walk-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(22px, 4vw, 48px); align-items: start; }
+.walk + .walk { margin-top: clamp(56px, 9vh, 96px); padding-top: clamp(40px, 6vh, 64px); border-top: 1px dashed var(--line); }
+.walk-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 48px); align-items: start; }
+.walk-body .pics { display: grid; gap: 14px; position: sticky; top: 84px; }
+.tagline { display: flex; flex-wrap: wrap; gap: 8px; }
+.tagline span { font: 400 0.66rem/1 var(--pixel); letter-spacing: 0.05em; padding: 7px 9px 6px; border-radius: 3px; background: var(--sea-lift); }
+
+/* tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th { text-align: left; font: 400 0.66rem/1.2 var(--pixel); letter-spacing: 0.05em; color: var(--mist); padding: 14px 14px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+tr:first-child td { border-top: 0; }
+td code { white-space: nowrap; }
+td.exact { color: var(--grass); font-weight: 700; }
+td.fitted { color: var(--blue); font-weight: 700; }
+
+/* settings card */
+.settings { display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--sea); }
+.settings .row { display: grid; grid-template-columns: minmax(10rem, 0.9fr) minmax(0, 1.1fr) minmax(0, 1.6fr); gap: 14px; padding: 12px 16px; border-top: 1px solid var(--line); align-items: baseline; }
+.settings .row:first-child { border-top: 0; }
+.settings .where { font: 400 0.68rem/1.4 var(--pixel); letter-spacing: 0.04em; color: var(--mist); }
+.settings .set { font-weight: 700; }
+.settings .why { color: var(--mist); font-size: 0.95rem; }
+pre { margin: 0; padding: 16px 18px; background: #081422; border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; font-size: 0.9rem; line-height: 1.55; color: var(--foam); }
+pre .k { color: var(--sun); }
+pre .s { color: var(--grass); }
+pre .c { color: var(--mist); }
+
+/* kinds */
+.kinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 30px); }
+.kind { display: grid; gap: 14px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(16, 38, 60, 0.45); }
+.kind dl { margin: 0; display: grid; grid-template-columns: 6.5rem 1fr; gap: 8px 12px; font-size: 0.95rem; }
+.kind dt { font: 400 0.64rem/1.6 var(--pixel); letter-spacing: 0.04em; color: var(--mist); }
+.kind dd { margin: 0; }
+
+/* questions */
+.qs { display: grid; gap: 34px; }
+.qs h3 { margin-bottom: 10px; color: var(--sun); font-size: 1.1rem; }
+.qgroup { display: grid; gap: 8px; }
+details { border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
+summary { cursor: pointer; padding: 13px 16px 13px 42px; position: relative; list-style: none; font-weight: 700; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "+"; position: absolute; left: 16px; top: 11px; font: 700 1.1rem/1 var(--display); color: var(--sun); }
+details[open] summary::before { content: "\2212"; }
+.answer { padding: 0 16px 16px 42px; color: var(--mist); display: grid; gap: 10px; }
+.answer b, .answer strong { color: var(--foam); }
+.answer ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.errors td:first-child { font-family: var(--mono); font-size: 0.85rem; color: var(--foam); }
+
+footer { padding-block: 44px 64px; border-top: 1px solid var(--line); color: var(--mist); font-size: 0.92rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: center; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.foot-links a { font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); text-decoration: none; }
+.foot-links a:hover { color: var(--sun); }
+
+@media (max-width: 960px) {
+  .walk-body, .walk-top, .hero .cols, .cols { grid-template-columns: minmax(0, 1fr); }
+  .walk-body .pics { position: static; }
+  .kinds { grid-template-columns: minmax(0, 1fr); }
+  .bar nav { display: none; }
+}
+@media (max-width: 640px) {
+  .settings .row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .pair { grid-template-columns: minmax(0, 1fr); }
+  .kind dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .kind dd { margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+</style>
+<link rel="preload" href="../assets/fonts/alagard.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body>
+<header class="bar">
+  <a class="mark" href="../"><img src="../assets/logo/logo_440.webp" width="440" height="183" alt="Worldfall"><span class="tag-alpha">Beta</span></a>
+  <nav aria-label="This page">
+    <a href="#quick">Quick start</a>
+    <a href="#sizes">Sizes</a>
+    <a href="#export">Export</a>
+    <a href="#shovel">Walkthroughs</a>
+    <a href="#kinds">Every kind</a>
+    <a href="#questions">Questions</a>
+    <a href="#publish">Publishing</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="top" aria-labelledby="title">
+  <div class="wrap cols">
+    <div class="prose" style="gap: 20px">
+      <p class="eyebrow">Modding guide</p>
+      <h1 id="title">Making models</h1>
+      <p class="lede">Replace any 3D model in Worldfall with your own. Build it in Blender, export a .glb into a pack folder, and it shows in the game a couple of seconds later.</p>
+      <ul class="facts" aria-label="What you need">
+        <li>Blender 4.2 or newer</li>
+        <li>Worldfall 0.9.8 or newer</li>
+        <li>Windows, Mac, Linux</li>
+      </ul>
+      <div class="ctas">
+        <a class="btn" href="dl/worldfall_pack_kit.zip" download>Download the kit (.zip)</a>
+        <a class="btn ghost" href="#quick">Quick start</a>
+      </div>
+      <p class="kitnote">The kit holds the example pack from the walkthroughs below (a shovel, a sword and a wolf), their .blend files, and a size reference with the game's own models in meters.</p>
+    </div>
+    <figure>
+      <div class="shot"><img src="img/game_sword.webp" width="1280" height="720" alt="First person in a forest, the right hand holding a plain iron sword made in Blender for this guide."></div>
+      <figcaption>The sword from walkthrough 2, in the game.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="quick" aria-labelledby="quick-h">
+  <div class="wrap cols">
+    <div class="head" style="margin: 0">
+      <h2 id="quick-h">Quick start</h2>
+      <p>Seven steps to your model in the game. The rest of this page explains each one.</p>
+    </div>
+    <ol class="steps">
+      <li><span>In WorldBox press <kbd>F2</kbd>, open <b>Mods</b>, press <b>Publish</b>, then <b>New pack</b>. It makes a pack folder named <code>my_pack</code>. <b>Pack folder</b>, top right of the Mods window, opens the folder that holds it.</span></li>
+      <li><span>Find the name of the model you want to replace in <code>model_names.txt</code>, in the folder <b>Pack folder</b> opens. Its second column is the model's size in meters.</span></li>
+      <li><span>Build your model in Blender in meters, with Z up, at that size: X × Y × Z as the sidebar's Dimensions show them. A person is 1.75 m tall.</span></li>
+      <li><span>Place the model so the world's origin (0, 0, 0) is where the game holds or stands it: the grip of a held thing, the ground under a creature or a building.</span></li>
+      <li><span>Name each material <code>name|kind</code>, for example <code>handle|wood</code> or <code>blade|metal|shiny</code>.</span></li>
+      <li><span><b>File › Export › glTF 2.0</b>, format glTF Binary, Apply Modifiers on. Save it as <code>models/&lt;name&gt;.glb</code> in your pack.</span></li>
+      <li><span>On the Mods window's <b>Installed</b> page, move your pack from Available to Active. While it is on, every export into <code>models</code> shows in the game within about two seconds. Keep your .blend files outside the pack.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="sizes" aria-labelledby="sizes-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Sizes</p>
+      <h2 id="sizes-h">Build at real size, in meters</h2>
+      <p>A person is 1.75 m tall and a sword is about 1 m long. Keep Blender's units as they are (Metric, Unit Scale 1.0). For the model you replace, match the size <code>model_names.txt</code> gives. That is right for every kind.</p>
+    </div>
+    <figure><div class="diagram" id="d-held-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;line&quot;,&quot;a&quot;:[0.207,0.6236],&quot;b&quot;:[0.9788,0.5778],&quot;dash&quot;:true},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.2027,0.6239],&quot;text&quot;:&quot;z = 0: the grip&quot;,&quot;anchor&quot;:&quot;end&quot;},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.2566,0.7282],&quot;text&quot;:&quot;a body&quot;,&quot;sub&quot;:&quot;1.75 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.3911,0.6127]},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.3911,0.6946],&quot;text&quot;:&quot;held_sword_iron&quot;,&quot;sub&quot;:&quot;1.03 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.5256,0.6047]},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.5256,0.6866],&quot;text&quot;:&quot;held_axe_iron&quot;,&quot;sub&quot;:&quot;0.92 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.6602,0.5967]},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.6602,0.8739],&quot;text&quot;:&quot;held_spear_iron&quot;,&quot;sub&quot;:&quot;2.06 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.7947,0.5887]},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.7947,0.6707],&quot;text&quot;:&quot;tool_pickaxe&quot;,&quot;sub&quot;:&quot;0.91 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.9293,0.5808]},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.9293,0.6672],&quot;text&quot;:&quot;tool_shovel&quot;,&quot;sub&quot;:&quot;1.54 m&quot;}]}"><img src="img/kind_held.webp" width="1200" height="750" alt="A body 1.75 m tall beside a sword, an axe, a spear, a pickaxe and a shovel, each standing on its grip." loading="lazy"></div><figcaption>Held things beside a body 1.75 m tall, at the sizes you build them. The dot on each is its origin, where the hand closes.</figcaption></figure>
+    <div class="cols" style="margin-top: clamp(28px, 5vh, 48px)">
+      <div class="prose">
+        <h3>How the game uses your size</h3>
+        <p class="quiet">Most kinds are drawn as big as you build them. Buildings, monsters and ships are scaled to their sprite the same way as the game's model they replace, so one twice as big is drawn twice as big. Only people, trees, bushes, rocks and eggs are stretched to their sprite, where just the proportions count.</p>
+        <p class="quiet">On this page, origin means the world origin (0, 0, 0) of your Blender file: the game puts that point where the model stands or is held. An object's own origin only matters for a part that moves, as its joint.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Kind</th><th scope="col">Names</th><th scope="col">Drawn</th></tr></thead>
+          <tbody>
+            <tr><td>Held weapons, work tools, carried things</td><td><code>held_</code> <code>tool_</code> <code>item_</code> <code>load_</code></td><td class="exact">Your size</td></tr>
+            <tr><td>Animals</td><td><code>animal_</code></td><td class="exact">Your size (the young at about half)</td></tr>
+            <tr><td>Furniture and room props</td><td><code>int_</code> <code>cabin_</code></td><td class="exact">Your size</td></tr>
+            <tr><td>Crabzilla, volcano, geysers</td><td><code>crabzilla</code> <code>nature_volcano</code> <code>nature_geyser</code></td><td class="exact">Your size</td></tr>
+            <tr><td>The dragon, placed lights, small plants, crops</td><td><code>monster_dragon</code> <code>light_</code> <code>plant_</code> <code>crop_wheat_</code></td><td class="exact">Close to your size</td></tr>
+            <tr><td>Buildings, wonders</td><td><code>house_</code> <code>hall_</code> <code>tent_</code> <code>nature_</code> and more</td><td class="exact">Your size, at the original's scale</td></tr>
+            <tr><td>Monsters</td><td><code>monster_</code></td><td class="exact">Your size, at the original's scale</td></tr>
+            <tr><td>Ships</td><td><code>boat_</code></td><td class="exact">Your size, at the original's scale, within limits</td></tr>
+            <tr><td>People</td><td><code>person_</code></td><td class="fitted">Stretched to the sprite's height</td></tr>
+            <tr><td>Trees, bushes, rocks</td><td><code>tree_</code> <code>bush</code> <code>rock_</code></td><td class="fitted">Stretched to the sprite's height</td></tr>
+            <tr><td>Eggs</td><td><code>egg_</code></td><td class="fitted">Stretched to the sprite</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cols" style="margin-top: clamp(28px, 5vh, 48px)">
+      <div class="prose">
+        <h3>Or let the game fit it</h3>
+        <p>Turn on <code>fit</code> in your pack's <code>worldfall.json</code> and size stops mattering. The game scales each model evenly about its origin until its longest side matches the model it replaces.</p>
+        <p class="quiet"><code>"fit": true</code> at the top fits every model in the pack. A model's own <code>"fit"</code> under <code>"models"</code> overrides it. A fitted model can't end up bigger or smaller than the original, so turn fit off for one you made bigger on purpose. Another mod's creature has nothing to fit to and keeps the size you built. Fit is off unless you turn it on.</p>
+      </div>
+<pre><code>{
+  <span class="k">"id"</span>: <span class="s">"my_pack"</span>,
+  <span class="k">"title"</span>: <span class="s">"My pack"</span>,
+  <span class="k">"version"</span>: <span class="s">"1.0.0"</span>,
+  <span class="k">"fit"</span>: true,
+  <span class="k">"models"</span>: {
+    <span class="k">"held_sword_iron"</span>: { <span class="k">"fit"</span>: false }
+  }
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="export" aria-labelledby="export-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Export</p>
+      <h2 id="export-h">Export settings</h2>
+      <p>Use Blender's own exporter: <b>File › Export › glTF 2.0 (.glb/.gltf)</b>. No add-on is needed. Change these settings and leave the rest as they are.</p>
+    </div>
+    <div class="settings" role="table" aria-label="glTF export settings">
+      <div class="row" role="row"><span class="where" role="cell">Format</span><span class="set" role="cell">glTF Binary (.glb)</span><span class="why" role="cell">Only .glb is read. A .gltf, .fbx or .obj is skipped with a note.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Include › Limit to</span><span class="set" role="cell">Selected Objects</span><span class="why" role="cell">Use it when the file holds anything else, such as a reference model. Leave it off when the scene is only your model.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Transform › +Y Up</span><span class="set" role="cell">On (the default)</span><span class="why" role="cell">With it off, the model lies on its back.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Data › Mesh › Apply Modifiers</span><span class="set" role="cell">On</span><span class="why" role="cell">Off by default. Without it Solidify, Mirror and Bevel are left out of the file.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Data › Compression</span><span class="set" role="cell">Off (the default)</span><span class="why" role="cell">Draco-compressed meshes are refused.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Data › Images</span><span class="set" role="cell">Automatic (the default)</span><span class="why" role="cell">Textures are packed into the .glb as PNG, or JPEG when the source is one. WebP is not read.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">Animation</span><span class="set" role="cell">Off</span><span class="why" role="cell">Animations are ignored. The game moves the parts itself.</span></div>
+      <div class="row" role="row"><span class="where" role="cell">File name</span><span class="set" role="cell"><code>models/&lt;name&gt;.glb</code></span><span class="why" role="cell">The model's name from <code>model_names.txt</code>: lowercase letters, digits and <code>_</code>. Straight in <code>models</code>, not in a folder below it.</span></div>
+    </div>
+    <p class="note" style="margin-top: 22px">You don't need to apply transforms first. Each object's location, rotation and scale are read from the file and baked in. Where the model sits relative to the world origin is what counts.</p>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="walks-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Walkthroughs</p>
+      <h2 id="walks-h">Three models, start to finish</h2>
+      <p>Each one was made as written here and checked in the game. The kit has the finished .blend files and the pack.</p>
+    </div>
+
+    <article class="walk" id="shovel" aria-labelledby="shovel-h">
+      <div class="walk-top">
+        <div class="prose">
+          <div class="tagline"><span>1 of 3</span><span>tool_shovel</span><span>1.54 m</span></div>
+          <h3 id="shovel-h" style="font-size: var(--step-2)">A dig shovel</h3>
+          <p>Replaces the shovel you dig with in first person. The hand holds it at the origin, 20 cm up from the end of the handle, with the blade up the Z axis.</p>
+        </div>
+        <figure><div class="shot"><img src="img/game_shovel.webp" width="1280" height="720" alt="First person looking up, the right hand holding the shovel made in this walkthrough." loading="lazy"></div><figcaption>The finished shovel in the game, looking up.</figcaption></figure>
+      </div>
+      <div class="walk-body">
+        <ol class="steps">
+          <li><span>Open Blender and start a <b>General</b> file. Delete the cube (<kbd>X</kbd>). The scene is already in meters.</span></li>
+          <li><span><b>The handle.</b> Add › Mesh › Cylinder. In the panel that opens bottom left, set Vertices 8, Radius 0.018 m, Depth 1.15 m, Location Z 0.375 m. It now runs from 20 cm below the origin to 95 cm above it.</span></li>
+          <li><span><b>The grip.</b> Add › Mesh › Cube at Location Z −0.2 m. In the sidebar (<kbd>N</kbd>), set its Dimensions to 0.12 × 0.035 × 0.035 m.</span></li>
+          <li><span><b>The blade.</b> Add › Mesh › Plane with Rotation X 90° and Location Z 1.1 m. Set Dimensions X 0.22 m and Y 0.30 m (standing up, the plane's own Y is its height). It stands across the handle with its face looking along Y.</span></li>
+          <li><span><b>Its point.</b> In Edit Mode (<kbd>Tab</kbd>), select the top edge and Subdivide. Move the new middle vertex up 7 cm (<kbd>G</kbd> <kbd>Z</kbd> 0.07) and the two top corners down 2 cm.</span></li>
+          <li><span><b>Thickness.</b> Add Modifier › Generate › Solidify, Thickness 0.006 m, Offset 0, then Apply it (<kbd>Ctrl</kbd>+<kbd>A</kbd> over the modifier). Joining in step 9 keeps only one object's modifiers, so apply it now.</span></li>
+          <li><span><b>The socket.</b> Add › Mesh › Cylinder with Vertices 8, Radius 0.024 m, Depth 0.1 m, Location Z 0.93 m.</span></li>
+          <li><span><b>Materials.</b> Select the handle and, in Material Properties, press New and rename the material <code>handle|wood</code>. For the grip, pick <code>handle|wood</code> from the list beside New. Make <code>blade|metal|shiny</code> for the blade and the socket. Each one's color is its Base Color. To paint it instead, plug an image into Base Color and UV-unwrap the object: the image is drawn on it in the game.</span></li>
+          <li><span><b>Join.</b> Select all (<kbd>A</kbd>), press <kbd>Ctrl</kbd>+<kbd>J</kbd>, then <kbd>Ctrl</kbd>+<kbd>A</kbd> › All Transforms. That puts the object's origin at the world origin, 20 cm up the handle where the hand holds it, and makes the sidebar read true: about 0.22 × 0.05 × 1.54 m.</span></li>
+          <li><span><b>Export</b> with the <a href="#export">settings above</a> as <code>models/tool_shovel.glb</code> in your pack. Turn the pack on, put a shovel in your hotbar, and look up.</span></li>
+        </ol>
+        <div class="pics">
+          <figure><div class="blend"><img src="img/blender_shovel.webp" width="1316" height="870" alt="Blender, front view: the shovel standing on the Z axis, its origin at the grip, the sidebar showing dimensions 0.22 by 0.048 by 1.54 meters." loading="lazy"></div><figcaption>Front view. The red line is height 0: the hand holds the shovel where it crosses the handle.</figcaption></figure>
+          <div class="pair">
+            <figure><div class="blend"><img src="img/blender_materials.webp" width="282" height="741" alt="Blender's Material Properties listing two materials named handle|wood and blade|metal|shiny." loading="lazy" style="max-height: 340px; width: auto"></div><figcaption>The two materials.</figcaption></figure>
+            <p class="note" style="align-self: start">The shovel is made in code, not in the model library. <code>model_names.txt</code> lists <code>tool_shovel</code> with its size but no info.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="walk" id="sword" aria-labelledby="sword-h">
+      <div class="walk-top">
+        <div class="prose">
+          <div class="tagline"><span>2 of 3</span><span>held_sword_iron</span><span>1.03 m</span></div>
+          <h3 id="sword-h" style="font-size: var(--step-2)">An iron sword</h3>
+          <p>Held at the middle of the grip, the blade straight up the Z axis, the edges pointing along Y. Every material has its own sword: <code>held_sword_</code> + wood, stone, copper, bronze, iron, silver, steel, mythril or adamantine.</p>
+        </div>
+        <figure><div class="diagram" id="d-held_axes-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.4959,0.1654],&quot;text&quot;:&quot;+Z  handle to tip&quot;,&quot;c&quot;:&quot;z&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.3925,0.6006],&quot;text&quot;:&quot;+Y  the edge&quot;,&quot;c&quot;:&quot;y&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.6017,0.6252],&quot;text&quot;:&quot;+X&quot;,&quot;c&quot;:&quot;x&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4959,0.666],&quot;text&quot;:&quot;origin: where the hand grips&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;}]}"><img src="img/kind_held_axes.webp" width="1200" height="750" alt="An iron sword with three arrows from its grip: Z up the blade, Y toward the edge, X to the side." loading="lazy"></div><figcaption>A held thing's axes. Swords, axes, hammers, spears, staffs and tools all follow them.</figcaption></figure>
+      </div>
+      <div class="walk-body">
+        <ol class="steps">
+          <li><span>Start a <b>General</b> file and delete the cube.</span></li>
+          <li><span><b>The blade.</b> Add › Mesh › Cube at Location Z 0.485 m, Dimensions 0.006 × 0.05 × 0.78 m. It is thin along X and wide along Y, so its edges point along Y.</span></li>
+          <li><span><b>The point.</b> In Edit Mode, hold the mouse over a long edge, press <kbd>Ctrl</kbd>+<kbd>R</kbd>, click, and right-click to keep the cut in the middle. Move it up 27 cm (<kbd>G</kbd> <kbd>Z</kbd> 0.27), 12 cm below the top. Select the four top vertices and scale them to nothing along Y (<kbd>S</kbd> <kbd>Y</kbd> 0), then to 0.3 along X.</span></li>
+          <li><span><b>The guard.</b> A Cube at Location Z 0.08 m, Dimensions 0.03 × 0.22 × 0.025 m. It runs along Y, like the edges.</span></li>
+          <li><span><b>The grip and pommel.</b> A Cylinder with Vertices 8, Radius 0.016 m, Depth 0.18 m at Z −0.02 m, and a UV Sphere with Segments 8, Rings 6, Radius 0.03 m at Z −0.13 m.</span></li>
+          <li><span><b>Materials.</b> <code>blade|metal|shiny</code> for the blade, <code>guard|metal</code> for the guard and pommel, <code>grip|cloth</code> for the grip.</span></li>
+          <li><span><b>Join</b> with <kbd>Ctrl</kbd>+<kbd>J</kbd>, then <kbd>Ctrl</kbd>+<kbd>A</kbd> › All Transforms. The world origin is the middle of the grip. The sidebar should read about 0.06 × 0.22 × 1.03 m.</span></li>
+          <li><span><b>Export</b> as <code>models/held_sword_iron.glb</code>. Hold an iron sword in the game to see it.</span></li>
+        </ol>
+        <div class="pics">
+          <figure><div class="blend"><img src="img/blender_sword.webp" width="1316" height="870" alt="Blender, right view: the sword upright, its guard running left and right along Y, the sidebar showing 0.06 by 0.22 by 1.03 meters, three materials listed." loading="lazy"></div><figcaption>Right view, looking along X: the edges and guard run along Y.</figcaption></figure>
+          <p class="note"><b>Nearer and further versions.</b> The game draws <code>held_sword_iron_m</code> from about 11 tiles away and <code>held_sword_iron_f</code> from about 30. If your pack has only <code>held_sword_iron</code>, it is used at every distance. A model under about 2,000 triangles needs no others. For heavier ones, copy the model, add a Decimate modifier and export each copy under its <code>_m</code> or <code>_f</code> name.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="walk" id="wolf" aria-labelledby="wolf-h">
+      <div class="walk-top">
+        <div class="prose">
+          <div class="tagline"><span>3 of 3</span><span>animal_wolf</span><span>1.7 m long</span></div>
+          <h3 id="wolf-h" style="font-size: var(--step-2)">A wolf</h3>
+          <p>Creatures are built from parts the game moves by name. A wolf's are <code>body</code>, <code>head</code>, <code>leg_fl</code>, <code>leg_fr</code>, <code>leg_bl</code>, <code>leg_br</code> and <code>tail</code>. <code>model_names.txt</code> lists every creature's parts.</p>
+        </div>
+        <figure><div class="shot"><img src="img/game_wolf.webp" width="1280" height="720" alt="First person in a forest clearing, a blocky wolf made of boxes standing a few steps ahead, colored in the game's dark wolf fur." loading="lazy"></div><figcaption>The box wolf in the game. Its fur takes the colors of the wolf's sprite.</figcaption></figure>
+      </div>
+      <div class="walk-body">
+        <ol class="steps">
+          <li><span><b>Build each part as its own object</b>, from cubes (Dimensions, then Location). The body 0.36 × 0.92 × 0.34 m at (0, 0.02, 0.58). The head 0.24 × 0.26 × 0.24 m at (0, −0.5, 0.74). Each leg 0.09 × 0.1 × 0.56 m at X ±0.11, Y −0.3 (front) or 0.32 (back), Z 0.28. The tail 0.08 × 0.42 × 0.08 m at (0, 0.66, 0.62), tilted −25° on X. The feet are on the ground (Z 0) and the head points toward −Y, so in Front view (<kbd>Numpad 1</kbd>) you look at its face.</span></li>
+          <li><span><b>Details join their part.</b> Add a snout, nose, ears and eyes, then <kbd>Ctrl</kbd>+<kbd>J</kbd> them into the head, a belly into the body and a paw into each leg. A separate snout would not turn with the head.</span></li>
+          <li><span><b>Name the objects</b> exactly <code>body</code>, <code>head</code>, <code>leg_fl</code>, <code>leg_fr</code>, <code>leg_bl</code>, <code>leg_br</code> and <code>tail</code>. As in the game's own wolf, <code>leg_fl</code> and <code>leg_bl</code> go on the −X side. The mesh names don't matter.</span></li>
+          <li><span><b>Put each origin on its joint.</b> The body at (0, 0, 0.58), the head at the neck (0, −0.4, 0.68), the legs at their tops (Z 0.56), the tail at its base (0, 0.47, 0.66). Type the point in Sidebar › View › 3D Cursor, select the part, and use Object › Set Origin › Origin to 3D Cursor. Parts turn about their origin.</span></li>
+          <li><span><b>Parent them to the body.</b> Select a part, then the body last, and press <kbd>Ctrl</kbd>+<kbd>P</kbd> › Object (Keep Transform). The head, legs and tail then move with the body.</span></li>
+          <li><span><b>Materials.</b> Name the coat <code>fur</code>, the belly and snout <code>fur_light</code>, the nose and paws <code>dark</code>, and the eyes <code>eyes|eyes</code>. The game paints <code>fur</code>, <code>fur_light</code> and <code>dark</code> in the colors of the creature's sprite, so the wolf stays wolf-colored whatever you pick. Any other name keeps your color.</span></li>
+          <li><span><b>Export</b> the whole scene as <code>models/animal_wolf.glb</code>, then find a wolf in the game.</span></li>
+        </ol>
+        <div class="pics">
+          <figure><div class="blend"><img src="img/blender_wolf.webp" width="1316" height="870" alt="Blender, right view: a wolf made of boxes facing left toward minus Y, orange dots marking each part's origin at the hips, shoulders, neck and tail base." loading="lazy"></div><figcaption>Right view: the head toward −Y. The dots are the parts' origins, their joints.</figcaption></figure>
+          <div class="pair">
+            <figure><div class="blend"><img src="img/blender_outliner.webp" width="282" height="167" alt="Blender's outliner: body, with head and the other parts nested under it." loading="lazy"></div><figcaption>The parts under the body.</figcaption></figure>
+            <p class="note" style="align-self: start">A part you leave out doesn't move. A part the game doesn't know is drawn and follows its parent. Don't use an armature: the game moves the parts itself.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="band" id="kinds" aria-labelledby="kinds-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Reference</p>
+      <h2 id="kinds-h">Every kind of model</h2>
+      <p>Where the origin goes, which way is front, which parts move and which materials the game recolors. Origin means the world's origin (0, 0, 0) in your Blender file. Every picture is the game's own model, at the size you would build it.</p>
+    </div>
+    <div class="kinds">
+      <article class="kind">
+        <h3>Held weapons and tools</h3>
+        <figure><div class="diagram" id="d-held_axes-2" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.4959,0.1654],&quot;text&quot;:&quot;+Z  handle to tip&quot;,&quot;c&quot;:&quot;z&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.3925,0.6006],&quot;text&quot;:&quot;+Y  the edge&quot;,&quot;c&quot;:&quot;y&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.4959,0.666],&quot;b&quot;:[0.6017,0.6252],&quot;text&quot;:&quot;+X&quot;,&quot;c&quot;:&quot;x&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4959,0.666],&quot;text&quot;:&quot;origin: where the hand grips&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;}]}"><img src="img/kind_held_axes.webp" width="1200" height="750" alt="An iron sword with three arrows from its grip: Z up the blade, Y toward the edge, X to the side." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>held_&lt;weapon&gt;_&lt;material&gt;</code>, <code>held_bow_&lt;material&gt;</code>, staffs, <code>tool_&lt;tool&gt;</code>, <code>item_&lt;resource&gt;</code>, <code>load_&lt;resource&gt;</code></dd>
+          <dt>Origin</dt><dd>Where the hand closes</dd>
+          <dt>Axes</dt><dd>Handle and tip up +Z, the edge or head toward +Y</dd>
+          <dt>Colors</dt><dd>Kept as you made them. A claiming flag's <code>cloth</code> and <code>cloth_dark</code> take the kingdom's color.</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>People</h3>
+        <figure><div class="diagram" id="d-person-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;line&quot;,&quot;a&quot;:[0.3286,0.9],&quot;b&quot;:[0.6429,0.9]},{&quot;t&quot;:&quot;bracket&quot;,&quot;a&quot;:[0.72,0.9],&quot;b&quot;:[0.72,0.1],&quot;text&quot;:&quot;1.75 m&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4857,0.9],&quot;text&quot;:&quot;origin: between the feet&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4301,0.2858],&quot;l&quot;:[0.3766,0.2858],&quot;text&quot;:&quot;upper_arm_L&quot;,&quot;anchor&quot;:&quot;end&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.424,0.406],&quot;l&quot;:[0.3766,0.406],&quot;text&quot;:&quot;lower_arm_L&quot;,&quot;anchor&quot;:&quot;end&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4623,0.4994],&quot;l&quot;:[0.3766,0.4994],&quot;text&quot;:&quot;upper_leg_L&quot;,&quot;anchor&quot;:&quot;end&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4618,0.6801],&quot;l&quot;:[0.3766,0.6801],&quot;text&quot;:&quot;lower_leg_L&quot;,&quot;anchor&quot;:&quot;end&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4857,0.2502],&quot;l&quot;:[0.5948,0.2502],&quot;text&quot;:&quot;head&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.5413,0.2858],&quot;l&quot;:[0.5948,0.3002],&quot;text&quot;:&quot;upper_arm_R&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.5475,0.406],&quot;l&quot;:[0.5948,0.406],&quot;text&quot;:&quot;lower_arm_R&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4857,0.4549],&quot;l&quot;:[0.5948,0.456],&quot;text&quot;:&quot;torso&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.4857,0.4905],&quot;l&quot;:[0.5948,0.506],&quot;text&quot;:&quot;hips&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.5091,0.4994],&quot;l&quot;:[0.5948,0.556],&quot;text&quot;:&quot;upper_leg_R&quot;,&quot;anchor&quot;:&quot;start&quot;},{&quot;t&quot;:&quot;callout&quot;,&quot;p&quot;:[0.5096,0.6801],&quot;l&quot;:[0.5948,0.6801],&quot;text&quot;:&quot;lower_leg_R&quot;,&quot;anchor&quot;:&quot;start&quot;}]}"><img src="img/kind_person.webp" width="1200" height="750" alt="The game&#x27;s human, front view, with a dot on each joint and its part name." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>person_&lt;race&gt;</code>, <code>person_&lt;race&gt;_fem</code> for women, and <code>person_&lt;race&gt;_child</code> and <code>_child_fem</code> for children. Any you leave out keeps the game's body.</dd>
+          <dt>Origin</dt><dd>Between the feet, facing −Y, 1.75 m tall</dd>
+          <dt>Parts</dt><dd><code>hips</code> <code>torso</code> <code>head</code> <code>upper_arm_L</code> <code>lower_arm_L</code> <code>upper_leg_L</code> <code>lower_leg_L</code> and the same with <code>_R</code>, plus <code>hair_short</code> <code>hair_long</code> <code>beard</code>. <code>_L</code> parts go on −X, the figure's right in Blender: the game draws people mirrored, so they end up on its left. One-sided details swap sides too.</dd>
+          <dt>Colors</dt><dd>From the sprite: <code>skin</code> <code>hair</code> <code>eyes</code> <code>shirt</code> <code>shirt_dark</code> <code>pants</code> <code>shoes</code> <code>belt</code> <code>mouth</code> <code>accent</code>. From dyes and the kingdom: <code>cloth</code> <code>cloth_dark</code> <code>kingdom</code>.</dd>
+          <dt>Looks</dt><dd>The game's person also has parts it shows one of at a time: <code>face_0</code> to <code>face_5</code>, <code>hair_0</code> to <code>hair_7</code>, <code>beard_0</code> to <code>beard_5</code>, <code>hat_…</code>, <code>job_…</code>. Only the first 64 parts can be shown and hidden.</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Creatures</h3>
+        <figure><div class="diagram" id="d-creature-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;line&quot;,&quot;a&quot;:[0.1908,0.7413],&quot;b&quot;:[0.8695,0.7413]},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.3718,0.2008],&quot;b&quot;:[0.1757,0.2008],&quot;text&quot;:&quot;front: -Y&quot;,&quot;c&quot;:&quot;y&quot;,&quot;at&quot;:&quot;above&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.5377,0.7413],&quot;text&quot;:&quot;origin: on the ground under it&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.5377,0.471],&quot;text&quot;:&quot;body&quot;,&quot;side&quot;:&quot;above&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4288,0.4278],&quot;text&quot;:&quot;head&quot;,&quot;side&quot;:&quot;above&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4517,0.4556],&quot;text&quot;:&quot;leg_fl / leg_fr&quot;,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.6323,0.4556],&quot;text&quot;:&quot;leg_bl / leg_br&quot;,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.675,0.4324],&quot;text&quot;:&quot;tail&quot;,&quot;side&quot;:&quot;above&quot;}]}"><img src="img/kind_creature.webp" width="1200" height="750" alt="The game&#x27;s wolf from the side, a dot on each joint with its part name, an arrow pointing to minus Y at its head." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>animal_&lt;id&gt;</code>, <code>monster_&lt;id&gt;</code>. Another mod's creature: <code>animal_&lt;its id&gt;</code>, or <code>person_&lt;its id&gt;</code> if it walks like a person.</dd>
+          <dt>Origin</dt><dd>On the ground under it, facing −Y</dd>
+          <dt>Parts</dt><dd><code>body</code> <code>head</code> <code>tail</code>; legs <code>leg_fl</code> <code>leg_fr</code> <code>leg_bl</code> <code>leg_br</code>, or <code>leg_l</code> <code>leg_r</code>, or <code>leg_1</code> to <code>leg_8</code>; <code>wing_l</code> <code>wing_r</code> <code>claw_l</code> <code>claw_r</code> <code>seg_1</code> to <code>seg_12</code> <code>flames</code> <code>halo</code></dd>
+          <dt>Colors</dt><dd>From the sprite: <code>fur</code> <code>fur_light</code> <code>dark</code> <code>accent</code> <code>shell</code> <code>horn</code> <code>nose</code> <code>wing</code> <code>spots</code></dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Buildings</h3>
+        <figure><div class="diagram" id="d-building-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;poly&quot;,&quot;pts&quot;:[[0.4368,0.6722],[0.606,0.598],[0.5003,0.4793],[0.331,0.5535]]},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4685,0.5758],&quot;text&quot;:&quot;origin: middle of the footprint&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.5906,0.7128],&quot;b&quot;:[0.6347,0.7622],&quot;text&quot;:&quot;front, door side: -Y&quot;,&quot;c&quot;:&quot;y&quot;}]}"><img src="img/kind_building.webp" width="1200" height="750" alt="A small house with its footprint outlined, the origin in the middle and an arrow from the door toward minus Y." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>house_</code>, <code>hall_</code>, <code>tent_</code> and the rest in <code>model_names.txt</code></dd>
+          <dt>Origin</dt><dd>The middle of the footprint, the floor at 0, the door side toward −Y. A stone footing may reach below 0 for slopes.</dd>
+          <dt>Size</dt><dd>Drawn at the game's scale for the building it replaces, so build it at the size <code>model_names.txt</code> gives. The rooms you walk into are measured in meters.</dd>
+          <dt>Parts</dt><dd><code>door_leaf</code> swings on its origin. <code>sails</code> turn. Materials named <code>door</code>, <code>door_gap</code> and <code>window</code> shape the room inside.</dd>
+          <dt>Colors</dt><dd><code>roof</code> and <code>banner</code> take the kingdom's color, and <code>roof_dark</code> and <code>banner_dark</code> too on other peoples' buildings. On human, elf, orc and dwarf buildings, <code>wall</code>, <code>stone</code> and <code>timber</code> take the race's.</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Trees, bushes, rocks</h3>
+        <figure><div class="diagram" id="d-tree-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;line&quot;,&quot;a&quot;:[0.2569,0.8554],&quot;b&quot;:[0.605,0.8554]},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.425,0.8554],&quot;text&quot;:&quot;origin: the trunk&#x27;s foot&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;bracket&quot;,&quot;a&quot;:[0.594,0.8554],&quot;b&quot;:[0.594,0.1416],&quot;text&quot;:&quot;8.2 m&quot;,&quot;sub&quot;:&quot;drawn as tall as its sprite&quot;}]}"><img src="img/kind_tree.webp" width="1200" height="750" alt="A pine with its origin at the trunk&#x27;s foot and its height marked." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>tree_</code>, <code>bush</code>, <code>rock_</code></dd>
+          <dt>Origin</dt><dd>The trunk's foot. Each one is turned at random.</dd>
+          <dt>Colors</dt><dd><code>bark</code> <code>leaf_dark</code> <code>leaf_mid</code> <code>leaf_light</code> <code>fruit</code> follow the tree's sprite and the seasons</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Ships</h3>
+        <figure><div class="diagram" id="d-boat-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.3273,0.721],&quot;b&quot;:[0.2325,0.7305],&quot;text&quot;:&quot;bow: -Y&quot;,&quot;c&quot;:&quot;y&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.5274,0.7484],&quot;text&quot;:&quot;origin: middle, at the waterline&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;below&quot;},{&quot;t&quot;:&quot;label&quot;,&quot;p&quot;:[0.5274,0.0968],&quot;text&quot;:&quot;length 8.2 m&quot;,&quot;sub&quot;:&quot;info length&quot;}]}"><img src="img/kind_boat.webp" width="1200" height="750" alt="A cog from the side, the bow toward minus Y, the origin at the waterline." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>boat_raft</code> <code>boat_fishing</code> <code>boat_cog</code> <code>boat_barge</code> <code>boat_galleon</code></dd>
+          <dt>Origin</dt><dd>The middle of the hull at the waterline, the bow toward −Y</dd>
+          <dt>Parts</dt><dd>Parts named <code>flag…</code> sway. <code>wheel</code> turns with the helm.</dd>
+          <dt>Colors</dt><dd><code>banner</code> and <code>banner_dark</code> take the kingdom's color</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Furniture</h3>
+        <figure><div class="diagram" id="d-furniture-1" data-marks="{&quot;w&quot;:1600,&quot;h&quot;:1000,&quot;marks&quot;:[{&quot;t&quot;:&quot;poly&quot;,&quot;pts&quot;:[[0.3114,0.7061],[0.5575,0.6117],[0.5575,0.0948],[0.3114,0.1892]],&quot;text&quot;:&quot;the wall: +Y&quot;},{&quot;t&quot;:&quot;arrow&quot;,&quot;a&quot;:[0.5233,0.7107],&quot;b&quot;:[0.6175,0.7843],&quot;text&quot;:&quot;front: -Y&quot;,&quot;c&quot;:&quot;y&quot;},{&quot;t&quot;:&quot;dot&quot;,&quot;p&quot;:[0.4789,0.6936],&quot;text&quot;:&quot;origin: on the floor&quot;,&quot;big&quot;:true,&quot;side&quot;:&quot;left&quot;}]}"><img src="img/kind_furniture.webp" width="1200" height="750" alt="An armchair with its back against a wall marked plus Y and its front toward minus Y." loading="lazy"></div></figure>
+        <dl>
+          <dt>Names</dt><dd><code>int_p_</code> and the other <code>int_</code> models</dd>
+          <dt>Origin</dt><dd>On the floor, the front toward −Y, the back against the wall at +Y</dd>
+          <dt>Size</dt><dd>Drawn exactly as big as you make it</dd>
+          <dt>Colors</dt><dd><code>wood</code> <code>wood_dark</code> <code>cloth</code> <code>cloth_light</code> <code>leather</code> <code>metal</code> <code>stone</code> <code>rock</code> <code>fur</code> <code>fur_light</code> <code>bark</code> <code>leaf</code> <code>ceramic</code> <code>bone</code> <code>wax</code> <code>food</code> <code>glow</code> take the house's colors. Any other name keeps yours.</dd>
+        </dl>
+      </article>
+      <article class="kind">
+        <h3>Can't be replaced yet</h3>
+        <dl>
+          <dt>Building sites</dt><dd><code>site_</code> models name their parts with <code>@</code> and <code>~</code>, which a .glb can't carry yet</dd>
+          <dt>New things</dt><dd>A pack replaces models the game already draws. It can't add new items or buildings, only models for other mods' creatures.</dd>
+        </dl>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="questions" aria-labelledby="questions-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Questions</p>
+      <h2 id="questions-h">Questions</h2>
+    </div>
+    <div class="qs">
+      <div class="qgroup">
+        <h3>Names and files</h3>
+        <details><summary>Where is my pack folder?</summary><div class="answer">
+          <p>Press <b>Pack folder</b> in the Mods window to open it. On disk it is:</p>
+          <ul>
+            <li><b>Windows</b> <code>%USERPROFILE%\AppData\LocalLow\mkarpenko\WorldBox\FirstPerson\packs</code></li>
+            <li><b>Mac</b> <code>~/Library/Application Support/mkarpenko/WorldBox/FirstPerson/packs</code></li>
+            <li><b>Linux</b> <code>~/.config/unity3d/mkarpenko/WorldBox/FirstPerson/packs</code></li>
+          </ul>
+          <p>Each pack is a folder inside it with a <code>worldfall.json</code> and a <code>models</code> folder. A pack unzipped one folder deep is found too.</p>
+        </div></details>
+        <details><summary>Which name do I give my file?</summary><div class="answer">
+          <p>The name of the model it replaces, from <code>model_names.txt</code> in the packs folder. The game writes that file when the Mods window opens. Its columns are name, size in meters, info, parts and materials.</p>
+          <p>A model in a people's pack that hasn't loaded yet is listed by name only. Load a world where that people lives, then open the Mods window again.</p>
+        </div></details>
+        <details><summary>What are the <code>_m</code> and <code>_f</code> models?</summary><div class="answer">
+          <p>The same model with fewer faces, drawn from about 11 tiles away (<code>_m</code>) and from about 30 (<code>_f</code>). If your pack gives only the plain name, that model is drawn at every distance. Past 60 tiles, creatures and people are drawn as one box per part.</p>
+        </div></details>
+        <details><summary>Can I give a model to another mod's creature?</summary><div class="answer">
+          <p>Yes. Name it <code>animal_&lt;its id&gt;</code>, or <code>person_&lt;its id&gt;</code> for one that walks like a person. Creatures you have met that have no model are listed in <code>names_asked.txt</code> in the packs folder.</p>
+        </div></details>
+      </div>
+
+      <div class="qgroup">
+        <h3>Size and placement</h3>
+        <details><summary>My model is far too big or too small</summary><div class="answer">
+          <ul>
+            <li>Check Scene Properties › Units: Metric, Unit Scale 1.0.</li>
+            <li>Compare the sidebar's Dimensions with the size in <code>model_names.txt</code>.</li>
+            <li>Or turn on <a href="#sizes"><code>fit</code></a> and let the game size it.</li>
+          </ul>
+          <p>Worldfall 0.9.8 and older read held things in body heights and the dragon, Crabzilla and the vents in tiles, not meters: a model built in meters came out 1.75 times too big. Update Worldfall, or turn on fit.</p>
+        </div></details>
+        <details><summary>It lies on its back, or faces the wrong way</summary><div class="answer">
+          <p>On its back: export with Transform › +Y Up on. The wrong way: the front must face −Y (toward you in Front view). Turn it 180° about Z. Held things point up +Z with the edge toward +Y.</p>
+        </div></details>
+        <details><summary>It floats, sinks or sits off to one side</summary><div class="answer">
+          <p>The game puts your file's world origin (0, 0, 0) where the model stands or is held: the ground under a creature or building, the grip of a held thing, the waterline of a ship. Move the model in Blender until that point is at the world's origin. An object's own origin only matters for a part that moves, as its joint.</p>
+        </div></details>
+      </div>
+
+      <div class="qgroup">
+        <h3>Parts and joints</h3>
+        <details><summary>What counts as a part?</summary><div class="answer">
+          <p>Every object with a mesh. Its name is the object's name (Blender's <code>.001</code> endings are dropped). Its joint is the object's origin, and its parent is the object it is parented to. Empties pass their position down but aren't parts. Two objects with the same name become <code>name</code> and <code>name_2</code>.</p>
+        </div></details>
+        <details><summary>Can I use an armature, weights or animations?</summary><div class="answer">
+          <p>No. The game moves parts itself, by name. A skinned mesh is used in its rest pose and shape keys are dropped, and both show as errors on the pack's card. Remove the Armature modifier and the shape keys before exporting. Animations are ignored.</p>
+        </div></details>
+        <details><summary>How many parts can a model have?</summary><div class="answer">
+          <p>Up to 256. Only the first 64 can be shown and hidden, which matters for people (hair, faces, hats). The game's own person has 61.</p>
+        </div></details>
+      </div>
+
+      <div class="qgroup">
+        <h3>Materials and colors</h3>
+        <details><summary>How do I name materials?</summary><div class="answer">
+          <p><code>name|kind|flag|flag</code>. The name is the slot's name: the game recolors some names (see <a href="#kinds">every kind</a>) and keeps your Base Color on the rest. The kind is the game's texture for it:</p>
+          <p><code>plain</code> <code>leaves</code> <code>bark</code> <code>wood</code> <code>stone</code> <code>roof</code> <code>thatch</code> <code>cloth</code> <code>skin</code> <code>hair</code> <code>metal</code> <code>fire</code> <code>glass</code> <code>plaster</code> <code>rock</code> <code>eyes</code> <code>ancient</code> <code>obsidian</code> <code>plates</code> <code>marble</code></p>
+          <p>A material named after a kind, like <code>wood</code>, takes that kind. Anything else without a kind is <code>plain</code>.</p>
+        </div></details>
+        <details><summary>What do the flags do?</summary><div class="answer">
+          <ul>
+            <li><code>emissive</code> lights itself: unlit, no shadow, no snow</li>
+            <li><code>nightglow</code> lights up after dark, like a lived-in house's windows</li>
+            <li><code>shiny</code> reflects the sky and glints in the sun</li>
+            <li><code>selfglow</code> glows softly in its own color, more at night</li>
+            <li><code>sheer</code> is half see-through</li>
+            <li><code>portal</code> shows the world outside, for windows of rooms you walk into</li>
+          </ul>
+          <p><code>foliage</code>, <code>crown</code> and <code>shell</code> are for tree leaves.</p>
+        </div></details>
+        <details><summary>Are image textures used?</summary><div class="answer">
+          <p>Yes. An image plugged into a material's <b>Base Color</b> is drawn on it, through the model's UV map. Both PNG and JPEG work, packed into the .glb (the exporter's default) or saved beside it in <code>models</code>. The material's name still sets the slot and the kind, but a textured material keeps its image where the game would recolor the slot, and the kind's grain (wood rings, brushed metal) is left off it. Light, shadows and the finish still apply.</p>
+          <p>Images 64 pixels or smaller on their longest side are drawn crisp, texel by texel; bigger ones are blended. To choose, add <code>"textures": "crisp"</code> or <code>"smooth"</code> under the model in <code>worldfall.json</code>. Pixels under half alpha are holes, so a leaf or a chain can be a flat card with a cutout. Images over 2048 pixels are shrunk to fit. The pack's card lists every texture it drew.</p>
+          <p>Only Base Color is read. Metallic, Roughness, Normal and Emission maps are ignored. WebP is not read: in the exporter, set Data › Images to PNG.</p>
+          <p>Vertex colors (a Color Attribute) are multiplied with the Base Color. To export them, set Data › Mesh › Use Vertex Color to Active.</p>
+        </div></details>
+        <details><summary>Parts of my model are invisible from one side</summary><div class="answer">
+          <p>Faces are drawn from the front only. Point every normal outward (Edit Mode › Mesh › Normals › Recalculate Outside). Thin things seen from both sides, like leaves, flags and sails, need two faces back to back: a Solidify modifier does it.</p>
+        </div></details>
+        <details><summary>All my materials came out one color</summary><div class="answer">
+          <p>Blender's default names <code>Material</code>, <code>Material.001</code> and so on all become one slot named <code>material</code>. Give each material its own name.</p>
+        </div></details>
+      </div>
+
+      <div class="qgroup">
+        <h3>Settings: info and worldfall.json</h3>
+        <details><summary>What is a model's info?</summary><div class="answer">
+          <p>Settings the game reads from a model: a weapon's tip, a house's width, a creature's gait. Your model gets the info of the model it replaces, so you can usually ignore it. To change a setting, add it in <code>worldfall.json</code>:</p>
+<pre><code><span class="k">"models"</span>: {
+  <span class="k">"held_axe_iron"</span>: { <span class="k">"info"</span>: <span class="s">"tip=0,0.3,0.7"</span> }
+}</code></pre>
+          <p>Keys are <code>key=value</code> pairs separated by <code>;</code>. Lengths and points are in meters, on your model. <code>model_names.txt</code> shows each model's info.</p>
+        </div></details>
+        <details><summary>What goes in worldfall.json?</summary><div class="answer">
+          <div class="table-wrap"><table>
+            <thead><tr><th scope="col">Key</th><th scope="col">What it is</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Required. 2 to 64 lowercase letters, digits, dots, dashes or underscores, starting with a letter or digit.</td></tr>
+              <tr><td><code>title</code>, <code>author</code>, <code>version</code>, <code>description</code></td><td>Shown on the pack's card and its Workshop page</td></tr>
+              <tr><td><code>worldfall</code></td><td>The oldest Worldfall the pack works with. A newer number warns players first.</td></tr>
+              <tr><td><code>fit</code></td><td><code>true</code> fits every model to the one it replaces (<a href="#sizes">sizes</a>)</td></tr>
+              <tr><td><code>models</code></td><td>Per model: <code>info</code>, <code>fit</code> and <code>textures</code> (<code>"crisp"</code> or <code>"smooth"</code>)</td></tr>
+              <tr><td><code>loadAfter</code></td><td>Pack ids this pack should sit above when it is turned on</td></tr>
+              <tr><td><code>requires</code></td><td>Workshop item numbers of other packs it needs</td></tr>
+              <tr><td><code>workshop</code></td><td>Written by Publish: the pack's Workshop item</td></tr>
+            </tbody>
+          </table></div>
+        </div></details>
+        <details><summary>How big can a model be?</summary><div class="answer">
+          <p>A .glb of up to 48 MB with 400,000 triangles, 256 parts and 64 materials. The game's own models mostly have 500 to 4,000 triangles. A thousand is typical.</p>
+        </div></details>
+      </div>
+
+      <div class="qgroup">
+        <h3>Testing</h3>
+        <details><summary>How do I turn a pack on?</summary><div class="answer">
+          <p><kbd>F2</kbd> › Mods › Manage. Move the pack from Available to Active with its <b>&gt;</b> button or <kbd>Enter</kbd>. When two active packs replace the same model, the one higher in the list wins. <kbd>Shift</kbd>+<kbd>Up</kbd>/<kbd>Down</kbd> moves a pack.</p>
+          <p>While a pack is on, every save into its folder shows in the game within about two seconds. No restart is needed.</p>
+          <figure><div class="shot"><img src="img/game_mods.webp" width="1288" height="732" alt="The Mods window: shipped packs under Available on the left, Guide examples under Active on the right with 3 replacements." loading="lazy"></div><figcaption>The Mods window. The example pack is on, at the top of Active.</figcaption></figure>
+        </div></details>
+        <details><summary>My model doesn't show up</summary><div class="answer">
+          <p>Look at the pack's card. Errors show in red as <b>N errors</b>, warnings in yellow, and its <b>i</b> button lists both. A model that can't be read is left out and the game's own stays. Smaller problems let it load but still count as errors. Errors block publishing; warnings don't. Files are only read while the pack is on.</p>
+          <figure><div class="shot"><img src="img/game_details.webp" width="1288" height="732" alt="A pack's details: its title, id and description, then a Replaces list with animal_wolf, held_sword_iron and tool_shovel each marked wins." loading="lazy"></div><figcaption>The <b>i</b> button: what the pack replaces, and its errors when it has any.</figcaption></figure>
+          <div class="table-wrap errors"><table>
+            <thead><tr><th scope="col">The card says</th><th scope="col">Is</th><th scope="col">Do this</th></tr></thead>
+            <tbody>
+              <tr><td>only .glb is read</td><td>Warning</td><td>Export with Format glTF Binary (.glb). Keep .blend files out of the pack.</td></tr>
+              <tr><td>a model name is lowercase letters, digits and _</td><td>Error</td><td>Rename the file</td></tr>
+              <tr><td>models go straight in models/, not in folders</td><td>Warning</td><td>Move the file up into <code>models</code></td></tr>
+              <tr><td>no such model in Worldfall</td><td>Warning</td><td>Check the name against <code>model_names.txt</code></td></tr>
+              <tr><td>(new creature), in the <b>i</b> list</td><td>Note</td><td>Names starting <code>animal_</code>, <code>monster_</code> or <code>person_</code> aren't checked. If you meant a game creature, check the spelling.</td></tr>
+              <tr><td>no meshes in the scene</td><td>Error</td><td>Nothing was exported. With Selected Objects on, select your model first.</td></tr>
+              <tr><td>the meshes are compressed</td><td>Error</td><td>Turn Data › Compression off</td></tr>
+              <tr><td>more than 64 slots (materials)</td><td>Error</td><td>Use fewer materials</td></tr>
+              <tr><td>two parts named 'X'</td><td>Error</td><td>Give each object its own name</td></tr>
+              <tr><td>'X' is not a kind or flag</td><td>Error</td><td>Check the spelling after <code>|</code> in a material's name</td></tr>
+              <tr><td>skins are not read, morph targets are not read</td><td>Error</td><td>Remove the Armature modifier and shape keys</td></tr>
+              <tr><td>No worldfall.json in its folder</td><td>Error</td><td>Start from <b>New pack</b>, or copy one in</td></tr>
+              <tr><td>Made for Worldfall X or later</td><td>Warning</td><td>Update Worldfall</td></tr>
+            </tbody>
+          </table></div>
+
+        </div></details>
+        <details><summary>Will removing a pack delete my work?</summary><div class="answer">
+          <p>Yes. A pack's <b>x</b> button removes its folder: to the recycle bin on Windows, to <code>FirstPerson/removed_packs</code> on Mac and Linux. Keep your .blend files outside the pack folder.</p>
+        </div></details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="publish" aria-labelledby="publish-h">
+  <div class="wrap cols">
+    <div class="head" style="margin: 0">
+      <p class="eyebrow">Publishing</p>
+      <h2 id="publish-h">Put it on the Steam Workshop</h2>
+      <p>Worldfall uploads the pack for you. Players subscribe from the Workshop or from the Browse tab in the game.</p>
+      <p class="note">Each upload replaces the item's Workshop description with one made from your <code>worldfall.json</code>. Write the description there.</p>
+    </div>
+    <ol class="steps">
+      <li><span>Keep Steam running. Turn your pack on once and make sure its card shows no errors.</span></li>
+      <li><span>Optional: put a <code>preview.png</code> of 512 × 512 and under 1 MB in the pack folder. Without one, the game draws your first model as the picture.</span></li>
+      <li><span><kbd>F2</kbd> › Mods › Publish. Pick your pack under <b>Your packs</b>. It should say <b>Ready to publish</b>.</span></li>
+      <li><span>Choose <b>Visibility</b>: Public, Friends or Hidden. Write what changed under <b>Changes</b>. <b>Dry run</b> shows what would be uploaded without sending it.</span></li>
+      <li><span>Press <b>Publish</b>, then <b>Upload</b>. If Steam asks, accept the Workshop agreement on Steam and publish again to finish.</span></li>
+      <li><span>To update it later, raise <code>version</code> and publish again. The item's number is saved in <code>worldfall.json</code>, so the same item is updated.</span></li>
+    </ol>
+  </div>
+  <div class="wrap" style="margin-top: clamp(28px, 5vh, 44px); display: grid; gap: 22px">
+    <figure><div class="shot"><img src="img/game_publish.webp" width="1288" height="732" alt="The Publish page: Your packs on the left with Guide examples picked, on the right Ready to publish, Visibility Public, Friends or Hidden, a Changes box, Dry run and Publish buttons, and New pack at the bottom left." loading="lazy"></div><figcaption>The Publish page. <b>New pack</b> is at the bottom of the list.</figcaption></figure>
+    <p class="note">Only the files the game reads go up: <code>worldfall.json</code>, <code>models</code>, <code>sounds</code>, <code>lang</code> and the preview. The game wraps them as a NeoModLoader mod that requires Worldfall and NeoModLoader, so subscribers get both. A pack subscribed from Browse turns itself on.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p>Worldfall is in beta and all assets are subject to change. It is an unofficial fan mod for WorldBox, which is made by Maxim Karpenko. The in-game pictures on this page show the walkthroughs' models in the game.</p>
+      <p class="credit">Headings set in Alagard by Hewett Tsoi.</p>
+    </div>
+    <nav class="foot-links" aria-label="Worldfall elsewhere">
+      <a href="../">Worldfall home</a>
+      <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>
+      <a href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Ko-fi</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  // Each diagram's labels, dots and arrows, drawn over its render from the points Blender worked out (0..1 of the
+  // picture). Sizes are in screen pixels whatever the picture's width: drawn again when it changes.
+  var NS = "http://www.w3.org/2000/svg";
+  var COLORS = { x: "#ff6b5e", y: "#8cd457", z: "#62a8ff" };
+  var SUN = "#ff9b4d", FOAM = "#e9e5db";
+  function el(name, attrs, parent) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function draw(fig) {
+    var data = JSON.parse(fig.getAttribute("data-marks"));
+    var W = data.w, H = data.h, shown = fig.getBoundingClientRect().width;
+    if (!shown) return;
+    var k = W / shown;                       // viewBox units per screen pixel
+    var fs = (shown < 420 ? 10.5 : shown < 560 ? 12 : 14.5) * k;   // label size in screen pixels
+    var old = fig.querySelector("svg");
+    if (old) old.remove();
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, "aria-hidden": "true" }, fig);
+    var defs = el("defs", {}, svg);
+    ["x", "y", "z", "sun"].forEach(function (c) {
+      var m = el("marker", { id: fig.id + "-a-" + c, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 4, markerHeight: 4, orient: "auto-start-reverse" }, defs);
+      el("path", { d: "M0,0 L10,5 L0,10 z", fill: COLORS[c] || SUN }, m);
+    });
+    function P(p) { return [p[0] * W, p[1] * H]; }
+    var labels = [];
+    function text(x, y, s, anchor, sub, color) {
+      var g = el("g", {}, svg);
+      var t = el("text", { x: x, y: y, "text-anchor": anchor || "middle", "font-size": fs, fill: color || FOAM, "stroke-width": 4 * k }, g);
+      t.textContent = s;
+      if (sub) {
+        var u = el("text", { x: x, y: y + fs * 1.05, "text-anchor": anchor || "middle", "font-size": fs * 0.86, "class": "sub", "stroke-width": 4 * k }, g);
+        u.textContent = sub;
+      }
+      labels.push(g);
+    }
+    // Labels kept inside the picture and off each other: each moved down (then up) past the ones before it.
+    function declutter() {
+      var placed = [], pad = 3 * k;
+      labels.forEach(function (g) {
+        var b = g.getBBox(), dx = 0, dy = 0;
+        if (b.x < pad) dx = pad - b.x; else if (b.x + b.width > W - pad) dx = W - pad - b.x - b.width;
+        function hits(oy) {
+          for (var i = 0; i < placed.length; i++) {
+            var q = placed[i];
+            if (b.x + dx < q.x + q.width && b.x + dx + b.width > q.x && b.y + oy < q.y + q.height && b.y + oy + b.height > q.y) return true;
+          }
+          return false;
+        }
+        var step = b.height * 0.55, tries = [0];
+        for (var n = 1; n <= 8; n++) { tries.push(n * step); tries.push(-n * step); }
+        for (var t = 0; t < tries.length; t++) {
+          var oy = tries[t];
+          if (b.y + oy < 0 || b.y + oy + b.height > H) continue;
+          if (!hits(oy)) { dy = oy; break; }
+        }
+        if (dx || dy) g.setAttribute("transform", "translate(" + dx + "," + dy + ")");
+        placed.push({ x: b.x + dx, y: b.y + dy, width: b.width, height: b.height });
+      });
+    }
+    data.marks.forEach(function (m) {
+      if (m.t === "line") {
+        var a = P(m.a), b = P(m.b);
+        el("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: FOAM, "stroke-opacity": 0.45, "stroke-width": 1.5 * k, "stroke-dasharray": m.dash ? 6 * k + " " + 5 * k : "none" }, svg);
+      } else if (m.t === "poly") {
+        el("polygon", { points: m.pts.map(function (p) { return P(p).join(","); }).join(" "), fill: SUN, "fill-opacity": 0.08, stroke: SUN, "stroke-width": 1.5 * k, "stroke-dasharray": 7 * k + " " + 5 * k }, svg);
+        if (m.text) { var q = P(m.pts[3]); text(q[0], q[1] - fs * 0.6, m.text, "middle"); }
+      } else if (m.t === "arrow") {
+        var a2 = P(m.a), b2 = P(m.b), c = COLORS[m.c] || SUN;
+        el("line", { x1: a2[0], y1: a2[1], x2: b2[0], y2: b2[1], stroke: c, "stroke-width": 2.5 * k, "marker-end": "url(#" + fig.id + "-a-" + (COLORS[m.c] ? m.c : "sun") + ")" }, svg);
+        if (!m.text) return;
+        if (m.at === "above") { text((a2[0] + b2[0]) / 2, Math.min(a2[1], b2[1]) - fs * 0.7, m.text, "middle", null, c); return; }
+        var dx = b2[0] - a2[0], dy = b2[1] - a2[1], len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var anc = dx > len * 0.3 ? "start" : dx < -len * 0.3 ? "end" : "middle";
+        text(b2[0] + dx / len * fs * 0.8, b2[1] + dy / len * fs * 0.8 + fs * 0.35, m.text, anc, null, c);
+      } else if (m.t === "bracket") {
+        var a3 = P(m.a), b3 = P(m.b);
+        el("path", { d: "M" + (a3[0] - 6 * k) + "," + a3[1] + " H" + a3[0] + " V" + b3[1] + " H" + (a3[0] - 6 * k), fill: "none", stroke: SUN, "stroke-width": 1.5 * k }, svg);
+        text(a3[0] + 8 * k, (a3[1] + b3[1]) / 2, m.text, "start", m.sub);
+      } else if (m.t === "dot") {
+        var p = P(m.p), r = (m.big ? 5.5 : 4) * k;
+        el("circle", { cx: p[0], cy: p[1], r: r, fill: SUN, stroke: "#07090b", "stroke-width": 2 * k }, svg);
+        if (!m.text) return;
+        var side = m.side || "right", g = r + 5 * k;
+        if (side === "right") text(p[0] + g, p[1] + fs * 0.35, m.text, "start");
+        else if (side === "left") text(p[0] - g, p[1] + fs * 0.35, m.text, "end");
+        else if (side === "above") text(p[0], p[1] - g, m.text, "middle");
+        else text(p[0], p[1] + g + fs * 0.8, m.text, "middle");
+      } else if (m.t === "callout") {
+        var c1 = P(m.p), c2 = P(m.l), toLeft = m.anchor === "end";
+        el("polyline", { points: [c1.join(","), [c2[0] + (toLeft ? 4 : -4) * k, c2[1]].join(",")].join(" "), fill: "none", stroke: FOAM, "stroke-opacity": 0.5, "stroke-width": 1 * k }, svg);
+        el("circle", { cx: c1[0], cy: c1[1], r: 3.5 * k, fill: SUN, stroke: "#07090b", "stroke-width": 1.5 * k }, svg);
+        text(c2[0] + (toLeft ? -4 : 4) * k, c2[1] + fs * 0.35, m.text, m.anchor);
+      } else if (m.t === "label") {
+        var p2 = P(m.p);
+        text(p2[0], p2[1], m.text, m.anchor || "middle", m.sub);
+      }
+    });
+    declutter();
+  }
+  var figs = Array.prototype.slice.call(document.querySelectorAll(".diagram[data-marks]"));
+  figs.forEach(draw);
+  if ("ResizeObserver" in window) {
+    var ro = new ResizeObserver(function (entries) { entries.forEach(function (e) { draw(e.target); }); });
+    figs.forEach(function (f) { ro.observe(f); });
+  }
+})();
+</script>
+</body>
+</html>
