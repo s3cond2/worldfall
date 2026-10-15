@@ -7,7 +7,7 @@
 <meta name="description" content="Worldfall is a first-person mod for WorldBox: zoom in on any creature and keep going, into its eyes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@500;700&family=Silkscreen&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap">
 <style>
 /* Layout: one screen of a villager's view on the shore, then a
    column of real screenshots on the night sea. One committed look: the map's ocean after dark, lit by the sun's gold. */
@@ -266,9 +266,11 @@ footer p { max-width: 60ch; }
   .btn:hover, .btn:active { transform: none; }
 }
 </style>
+<link rel="preload" href="assets/fonts/alagard.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/theme.css">
 
 <header class="bar">
-  <a class="mark" href="#dive">WORLDFALL <span class="tag-alpha">Beta</span></a>
+  <a class="mark" href="#dive"><img src="assets/logo/logo_440.webp" width="440" height="183" alt="Worldfall"><span class="tag-alpha">Beta</span></a>
   <nav aria-label="Sections">
     <a class="keep" href="#install">Install</a>
     <a href="#updates">Updates</a>
@@ -292,8 +294,7 @@ footer p { max-width: 60ch; }
 
       <div class="intro">
         <p class="eyebrow">A first-person mod for WorldBox</p>
-        <h1 id="title">Worldfall</h1>
-        <p class="wip"><span class="pulse" aria-hidden="true"></span>Beta · work in progress · new updates keep coming</p>
+        <h1 id="title" class="logo-h1"><img src="assets/logo/logo_1400.webp" srcset="assets/logo/logo_900.webp 900w, assets/logo/logo_1400.webp 1400w" sizes="(max-width: 780px) 82vw, 640px" width="1400" height="581" alt="Worldfall" fetchpriority="high"></h1>
         <p class="lede">Zoom in on anyone in your world and keep going, down through the trees and into their eyes.</p>
       </div>
     </div>
@@ -469,12 +470,12 @@ footer p { max-width: 60ch; }
       <div>
         <p class="eyebrow">Added lately</p>
         <ul class="lately">
-          <li>Real rooms in houses, with the family at home, doors, locks and curtains</li>
-          <li>Sit and kneel with <kbd>P</kbd>, sleep in a bed to save, and fight indoors</li>
-          <li>Your own village: plan it with <kbd>Y</kbd> and build it with a hammer</li>
-          <li>Free flight with <kbd>F</kbd>, a torch and a compass in hand</li>
-          <li>Multiplayer for up to 8 players (early)</li>
-          <li>Seasonal sun, soft shadows, moon phases and every metal weapon modelled (early)</li>
+          <li>The map and the 3D world keep the same night: lit houses, smoke and doors on both</li>
+          <li>People really live inside: at the table, in bed, by the hearth, and they use the doors near you</li>
+          <li>Look inside: roofs fade under the mouse, and <kbd>G</kbd> takes people over where they are</li>
+          <li>Ask "I'm looking for someone" or read the town hall's ledger to find anyone</li>
+          <li>Forging with quality, lights you set down, and kings' orders for ships and guards</li>
+          <li>Far trees and buildings as 3D models on the graphics card</li>
         </ul>
       </div>
     </div>
@@ -483,46 +484,46 @@ footer p { max-width: 60ch; }
   <section class="band" id="next">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">New in 0.9.5</p>
-        <h2>Homes, villages and open war</h2>
+        <p class="eyebrow">New since 0.9.5</p>
+        <h2>Homes, forges and kings' orders</h2>
         <p>All of this is in the current download.</p>
       </div>
       <div class="grid">
         <figure>
-          <div class="shot"><img src="shots/next_war.webp" alt="Two armies meeting on open ground, the grass between them burning." loading="lazy"></div>
-          <figcaption><h3>War on open ground</h3><p>Armies clash, fires spread, and you can fly a free camera over it all or fight in the line.</p></figcaption>
+          <div class="shot"><img src="shots/n98_1.webp" alt="Two armies charging across a sandy plain at sunset, palm trees and mountains behind." loading="lazy"></div>
+          <figcaption><h3>War on open ground</h3><p>Armies charge across open ground. Fly a free camera over the battle, or fight in the line.</p></figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/next_hearth.webp" alt="A house at night: a fire in the stone hearth, chairs round it, two people by the table." loading="lazy"></div>
-          <figcaption><h3>Real homes</h3><p>Rooms the size of the house, an upstairs in the bigger ones, and the family who lives there at home.</p></figcaption>
+          <div class="shot"><img src="shots/n98_2.webp" alt="Inside a timber attic: a table with a lit candle, a rug, a ladder and a wardrobe." loading="lazy"></div>
+          <figcaption><h3>Homes to their size</h3><p>Every house furnished to its size: beds, a hearth, a table and a candle, an upstairs in the bigger ones.</p></figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/next_curtains.webp" alt="Curtains drawn back from a window, the village street outside." loading="lazy"></div>
-          <figcaption><h3>Curtains and doors</h3><p>Open doors and draw curtains by hand. Households draw theirs at dusk.</p></figcaption>
+          <div class="shot"><img src="shots/n98_3.webp" alt="A lamp post at dusk at the edge of a village street, a lit house and a brazier behind it." loading="lazy"></div>
+          <figcaption><h3>Lights you set down</h3><p>Standing and wall torches, lamp posts and braziers, anywhere on land. Towns put up their own.</p></figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/next_torch.webp" alt="A lit torch held out over dry ground at night." loading="lazy"></div>
+          <div class="shot"><img src="shots/n98_4.webp" alt="A village at night from a hillside: lit windows and lamp posts between the houses." loading="lazy"></div>
+          <figcaption><h3>The town after dark</h3><p>Lit windows and lamps along the streets, and the same night on the map as in 3D.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/n98_5.webp" alt="The crafting window: weapon recipes, and a legendary sword named Ashbringer just forged." loading="lazy"></div>
+          <figcaption><h3>Forging</h3><p>A recipe card with the odds of each quality and a forge queue. Legendary pieces come out with their own name.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/n98_6.webp" alt="A mythril hammer glowing cyan in the hand at night, the northern lights over the sea." loading="lazy"></div>
+          <figcaption><h3>Every weapon remodelled</h3><p>All 53 weapons rebuilt in their metals. Mythril and adamantine glow after dark.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/n98_7.webp" alt="The war map's order bar: Transport, Trader and Fishing ship buttons and guards to send." loading="lazy"></div>
+          <figcaption><h3>Kings' orders</h3><p>As king, order ships from your town's card on the war map, and send your guards after anyone.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/n98_8.webp" alt="A fishing boat, a transport and a trading ship under sail, moored in a sunny bay." loading="lazy"></div>
+          <figcaption><h3>Ships from the dock</h3><p>Ordered ships are built at the town's docks: transport, trade and fishing, up to three of each.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="shots/n98_9.webp" alt="A torch held up at night between village houses, a lit window and villagers nearby." loading="lazy"></div>
           <figcaption><h3>A torch in hand</h3><p>Light it at a fire and hold it out. Rain and water put it out.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/next_village.webp" alt="Planning a village: a ghost of a tent placed beside a campfire and new houses." loading="lazy"></div>
-          <figcaption><h3>A village of your own</h3><p>Found a village, place its buildings, and help build them with a hammer.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/next_flag.webp" alt="A blue realm flag flying over a timber town hall by the sea." loading="lazy"></div>
-          <figcaption><h3>Realm colours</h3><p>Town halls fly their realm's flag. Kings, captains and guards wear their role.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/next_wonder.webp" alt="A flame tower glowing at night, embers and fire around its base." loading="lazy"></div>
-          <figcaption><h3>Wonders in 3D</h3><p>Waypoints, spawners, brains and mage towers rebuilt, with light and motion.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/next_axe.webp" alt="A mythril axe glowing blue in the hand at night." loading="lazy"></div>
-          <figcaption><h3>Every weapon modelled</h3><p>All 44 metal weapons in their metals. Mythril and adamantine glow after dark.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/next_burnt.webp" alt="A burnt forest at night, charred trunks still glowing." loading="lazy"></div>
-          <figcaption><h3>Burnt forests</h3><p>Burnt trees stand as charred skeletons that smoulder and crumble to ash.</p></figcaption>
         </figure>
       </div>
     </div>
@@ -652,33 +653,24 @@ footer p { max-width: 60ch; }
     <div class="wrap">
       <div class="head">
         <p class="eyebrow">Graphics settings</p>
-        <h2>Sharp, or easy on your PC</h2>
-        <p>Pick the picture's size in F2, from 640×360 to 1920×1080. Version 0.9.5 adds a quality preset from Low to Ultra: Low draws no shadows and a shorter view, for older and laptop graphics. Drag across the picture: the same street at the same moment, both straight from the game.</p>
+        <h2>Pick your look</h2>
+        <p>The same street at the same moment in each of the looks you can pick in F2, straight from the game. The picture's size runs from 640×360 to 1920×1080, and the Low preset keeps older and laptop graphics smooth.</p>
       </div>
-      <figure style="margin:0">
-        <div class="cmp" id="cmp-q">
-          <img src="shots/q_high_village.webp" alt="A village street at full quality: sharp half-timbered house, soft shadows, detailed trees." loading="lazy">
-          <img class="top pixel" src="shots/q_low_village.webp" alt="The same street at Low quality, 640 by 360: chunkier pixels and no shadows." loading="lazy">
-          <span class="rule"></span>
-          <span class="tag l">Low · 640×360</span><span class="tag r">High · 1920×1080</span>
-          <input type="range" min="0" max="100" value="50" step="0.5" aria-label="Slide between Low and High quality">
+      <figure class="looks" id="looks">
+        <div class="looks-tabs" role="tablist" aria-label="Looks">
+          <button type="button" role="tab" aria-selected="true" data-look="painterly">Painterly</button>
+          <button type="button" role="tab" aria-selected="false" data-look="classic">Classic</button>
+          <button type="button" role="tab" aria-selected="false" data-look="dark">Dark fantasy</button>
+          <button type="button" role="tab" aria-selected="false" data-look="low">Low · 640×360</button>
         </div>
-        <figcaption>Left: the Low preset at 640×360. Right: 1920×1080 with Ultra shadows.</figcaption>
+        <div class="shot looks-stack">
+          <img src="shots/look_painterly.webp" data-look="painterly" data-cap="The default finish: soft light, brushed leaves and shadows." alt="The same village street by day, drawn Painterly." loading="lazy">
+          <img src="shots/look_classic.webp" data-look="classic" data-cap="Flatter blocks of colour, as the CPU renderer draws them." alt="The same village street by day, drawn Classic." hidden loading="lazy">
+          <img src="shots/look_dark.webp" data-look="dark" data-cap="Deeper greens and sharper edges by day; blue fog and glowing water at night." alt="The same village street by day, drawn Dark fantasy." hidden loading="lazy">
+          <img class="pixel" src="shots/look_low.webp" data-look="low" data-cap="The Low preset for older and laptop graphics: no shadows, a shorter view." alt="The same village street by day, drawn at Low quality, 640 by 360." hidden loading="lazy">
+        </div>
+        <figcaption id="looks-cap">The default finish: soft light, brushed leaves and shadows.</figcaption>
       </figure>
-      <div class="trio sky">
-        <figure>
-          <div class="shot"><img class="pixel" src="shots/q_low_mushroom.webp" alt="Giant red mushrooms at Low quality, 640 by 360." loading="lazy"></div>
-          <figcaption>Mushroom biome at Low.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img class="pixel" src="shots/q_low_crystal.webp" alt="Purple crystal trees on cyan ground at Low quality, 640 by 360." loading="lazy"></div>
-          <figcaption>Crystal biome at Low.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img class="pixel" src="shots/q_low_dragon.webp" alt="A red dragon over a town in the 3D god view at Low quality, 640 by 360." loading="lazy"></div>
-          <figcaption>A dragon in the god view at Low.</figcaption>
-        </figure>
-      </div>
     </div>
   </section>
 
@@ -695,7 +687,7 @@ footer p { max-width: 60ch; }
           <figcaption>Crabzilla's claw lasers, with a dragon overhead.</figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/nuke.webp" alt="A mushroom cloud rising over a sunny island and sea, seen past a snowy mountainside." loading="lazy"></div>
+          <div class="shot"><img src="shots/nuke.webp?v=98" alt="An atomic bomb's mushroom cloud rising into a sunset sky, seen from a hillside." loading="lazy"></div>
           <figcaption>An atomic bomb across the bay.</figcaption>
         </figure>
         <figure>
@@ -762,11 +754,11 @@ footer p { max-width: 60ch; }
           <figcaption><h3>Use your kind's power</h3><p><kbd>X</kbd> throws a bandit's firebomb, raises a necromancer's dead, casts an evil mage's fireball.</p></figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/fight.webp" alt="Villagers fighting orc raiders between houses at sunset, flames at the edges." loading="lazy"></div>
+          <div class="shot"><img src="shots/fight.webp?v=98" alt="Fighting in the front line on open sand: a sword in your hand, an armoured knight beside you, enemies ahead." loading="lazy"></div>
           <figcaption><h3>Fight where it happens</h3><p>Swing at what's under the crosshair, guard and parry, draw a bow. When raiders hit your town, you're standing in it.</p></figcaption>
         </figure>
         <figure>
-          <div class="shot"><img src="shots/ship.webp" alt="At a ship's wheel off the coast at dusk, the town's stone houses on the shore." loading="lazy"></div>
+          <div class="shot"><img src="shots/ship.webp?v=98" alt="At a ship's wheel on a river at sunset, the sails above and the shore ahead." loading="lazy"></div>
           <figcaption><h3>Take the helm</h3><p>Take over a ship and steer her yourself: <kbd>W</kbd>/<kbd>S</kbd> set the sails, <kbd>A</kbd>/<kbd>D</kbd> turn the wheel, <kbd>Shift</kbd> fills the sails with a gust.</p></figcaption>
         </figure>
         <figure>
@@ -829,6 +821,7 @@ footer p { max-width: 60ch; }
 <footer>
   <div class="wrap">
     <p>Worldfall is in beta: a work in progress that keeps getting updates, and all assets are subject to change. It is an unofficial fan mod for WorldBox, which is made by Maxim Karpenko. Every picture on this page was captured in the game with the mod running.</p>
+    <p class="credit">Headings set in Alagard by Hewett Tsoi.</p>
     <nav class="foot-links" aria-label="Worldfall elsewhere">
       <a href="https://discord.gg/KNE9Bd9j" target="_blank" rel="noopener">Discord</a>
       <a href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener">TikTok</a>
@@ -880,6 +873,24 @@ footer p { max-width: 60ch; }
   });
   if (/Mac/.test(navigator.platform || "")) pick(1); else pick(0);
 })();
+  /* ---- looks ---- */
+  (function () {
+    var box = document.getElementById("looks");
+    if (!box) return;
+    var tabs = box.querySelectorAll("[role=tab]"), imgs = box.querySelectorAll(".looks-stack img"), cap = document.getElementById("looks-cap");
+    function pick(k) {
+      Array.prototype.forEach.call(tabs, function (t) { var on = t.getAttribute("data-look") === k; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; });
+      Array.prototype.forEach.call(imgs, function (im) { var on = im.getAttribute("data-look") === k; im.hidden = !on; if (on) { im.loading = "eager"; cap.textContent = im.getAttribute("data-cap"); } });
+    }
+    Array.prototype.forEach.call(tabs, function (t, i) {
+      t.addEventListener("click", function () { pick(t.getAttribute("data-look")); });
+      t.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        var j = (i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
+        pick(tabs[j].getAttribute("data-look")); tabs[j].focus();
+      });
+    });
+  })();
 </script>
 
 </html>
