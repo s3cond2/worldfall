@@ -5,280 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Worldfall</title>
 <meta name="description" content="Worldfall is a first-person mod for WorldBox: zoom in on any creature and keep going, into its eyes.">
+<link rel="canonical" href="https://worldfall3d.com/">
+<meta property="og:title" content="Worldfall">
+<meta property="og:description" content="Worldfall is a first-person mod for WorldBox: zoom in on any creature and keep going, into its eyes.">
+<meta property="og:url" content="https://worldfall3d.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap">
-<style>
-/* Layout: one screen of a villager's view on the shore, then a
-   column of real screenshots on the night sea. One committed look: the map's ocean after dark, lit by the sun's gold. */
-:root {
-  --sea-deep: #0a1828;      /* the page: open ocean at night */
-  --sea: #10263c;           /* raised panels */
-  --sea-lift: #183a5a;      /* borders, tracks */
-  --foam: #eef2e8;          /* text */
-  --mist: #9fb5c0;          /* quiet text */
-  --sun: #ffc54a;           /* the one accent: golden-hour sun */
-  --grass: #8cd457;         /* small live markers */
-  --shade: rgba(5, 12, 20, 0.72);
-  --line: rgba(238, 242, 232, 0.13);
-
-  --display: "Pixelify Sans", "Courier New", monospace;
-  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
-  --pixel: "Silkscreen", "Courier New", monospace;
-
-  --step--1: 0.84rem;
-  --step-0: 1.0625rem;
-  --step-1: 1.3rem;
-  --step-2: clamp(1.6rem, 1.2rem + 1.6vw, 2.35rem);
-  --step-3: clamp(3.2rem, 1.6rem + 7.5vw, 7.5rem);
-  --gutter: clamp(16px, 4vw, 48px);
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: auto; }
-body {
-  margin: 0;
-  background: var(--sea-deep);
-  color: var(--foam);
-  font: 400 var(--step-0)/1.6 var(--body);
-  -webkit-font-smoothing: antialiased;
-}
-img { max-width: 100%; display: block; }
-[hidden] { display: none !important; }
-a { color: var(--sun); text-underline-offset: 3px; }
-a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.05; text-wrap: balance; margin: 0; }
-p { margin: 0; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.eyebrow { font: 400 0.72rem/1.2 var(--pixel); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sun); }
-
-/* ---- top bar ---- */
-.bar {
-  position: fixed; inset: 0 0 auto 0; z-index: 20;
-  display: flex; align-items: center; gap: 20px;
-  padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 14px;
-  background: linear-gradient(to bottom, rgba(5, 12, 20, 0.7), rgba(5, 12, 20, 0));
-}
-.mark { font: 700 1.15rem/1 var(--display); color: var(--foam); text-decoration: none; letter-spacing: 0.04em; }
-.tag-alpha {
-  display: inline-block; vertical-align: 2px; margin-left: 6px;
-  font: 400 0.58rem/1 var(--pixel); letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 4px 6px 3px; border-radius: 3px; background: var(--sun); color: #1d1405;
-}
-.bar nav { display: flex; gap: 18px; margin-left: auto; }
-.bar nav a { color: var(--foam); text-decoration: none; font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.06em; opacity: 0.85; }
-.bar nav a:hover { opacity: 1; color: var(--sun); }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  font: 700 0.95rem/1 var(--body); text-decoration: none;
-  padding: 11px 16px; border-radius: 4px;
-  background: var(--sun); color: #1d1405;
-  box-shadow: 0 3px 0 #9a6a10;
-}
-.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #9a6a10; }
-.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #9a6a10; }
-.btn.ghost { background: transparent; color: var(--foam); box-shadow: inset 0 0 0 2px var(--line); }
-.bar .btn { padding: 9px 13px; font-size: 0.85rem; }
-.bar-links { display: flex; gap: 8px; flex: none; }
-.mark { min-width: 0; white-space: nowrap; overflow: hidden; }
-
-/* ---- the hero ---- */
-.dive { position: relative; }
-.screen { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #0d2a47; }
-.screen .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.scrim {
-  position: absolute; inset: 0; pointer-events: none;
-  background:
-    linear-gradient(to top, rgba(5, 12, 20, 0.78) 0%, rgba(5, 12, 20, 0) 38%),
-    linear-gradient(to right, rgba(5, 12, 20, 0.55) 0%, rgba(5, 12, 20, 0) 45%);
-}
-.intro {
-  position: absolute; left: var(--gutter); bottom: clamp(96px, 16vh, 170px);
-  max-width: min(36rem, calc(100% - 2 * var(--gutter)));
-  display: grid; gap: 14px;
-}
-.intro h1 { font-size: var(--step-3); letter-spacing: 0.01em; color: var(--foam); text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35); }
-.intro .lede { font-size: var(--step-1); line-height: 1.45; color: var(--foam); max-width: 30rem; }
-.wip {
-  justify-self: start; display: inline-flex; align-items: center; gap: 10px; max-width: 100%;
-  font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.06em; color: var(--foam);
-  padding: 8px 12px 7px; border-radius: 3px; background: var(--shade); border: 1px solid var(--line);
-}
-.pulse { width: 8px; height: 8px; background: var(--grass); animation: blink 1.4s steps(2, jump-none) infinite; }
-@keyframes blink { 50% { opacity: 0.25; } }
-/* ---- sections ---- */
-.wrap { width: min(1180px, 100%); margin: 0 auto; padding-inline: var(--gutter); }
-.band { padding-block: clamp(72px, 12vh, 140px); }
-.band + .band { border-top: 1px solid var(--line); }
-#install { padding-top: clamp(56px, 9vh, 96px); }
-.head { display: grid; gap: 14px; max-width: 40rem; margin-bottom: clamp(28px, 5vh, 44px); }
-.head h2 { font-size: var(--step-2); }
-.head p { color: var(--mist); font-size: var(--step-0); max-width: 62ch; }
-kbd { font: 400 0.72em/1 var(--pixel); padding: 3px 6px 2px; border-radius: 3px; background: var(--sea-lift); color: var(--foam); border-bottom: 2px solid #0a1828; white-space: nowrap; }
-.shot { border-radius: 6px; overflow: hidden; background: var(--sea); border: 1px solid var(--line); }
-.shot img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
-figcaption { font-size: var(--step--1); color: var(--mist); margin-top: 10px; }
-
-/* compare: flat map / 3D */
-.cmp { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); --pos: 50%; user-select: none; }
-.cmp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.cmp .top { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
-.cmp .rule { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 3px; margin-left: -1.5px; background: var(--sun); pointer-events: none; }
-.cmp .rule::after { content: ""; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; background: var(--sun); clip-path: polygon(0 50%, 30% 20%, 30% 40%, 70% 40%, 70% 20%, 100% 50%, 70% 80%, 70% 60%, 30% 60%, 30% 80%); }
-.cmp .tag { position: absolute; top: 14px; font: 400 0.66rem/1 var(--pixel); letter-spacing: 0.05em; padding: 7px 9px; background: var(--shade); color: var(--foam); border-radius: 3px; pointer-events: none; }
-.cmp .tag.l { left: 14px; }
-.cmp .tag.r { right: 14px; }
-img.pixel { image-rendering: pixelated; }
-.clips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
-.clips figure { margin: 0; }
-.clip { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 6px; border: 1px solid var(--line); background: var(--sea); }
-@media (max-width: 760px) { .clips { grid-template-columns: minmax(0, 1fr); } }
-.cmp input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
-.cmp:has(input:focus-visible) { outline: 3px solid var(--sun); outline-offset: 3px; }
-
-/* the hour */
-.hours { display: grid; gap: 16px; }
-.hours .stack { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--sea); }
-.hours .stack img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.dial { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; padding-top: 26px; }
-.dial input { position: absolute; left: 0; right: 0; top: 0; width: 100%; margin: 0; accent-color: var(--sun); }
-.dial span { font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); }
-.dial span:nth-child(3) { text-align: center; }
-.dial span:nth-child(4) { text-align: right; }
-.dial span.now { color: var(--sun); }
-
-/* what you do in there */
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 30px); }
-.grid figure { margin: 0; display: grid; gap: 12px; align-content: start; }
-.grid h3 { font-size: 1.2rem; letter-spacing: 0.01em; }
-.grid figcaption { margin: 0; display: grid; gap: 6px; }
-.grid figcaption p { color: var(--mist); font-size: 0.98rem; }
-
-/* dragons: one big picture and two beside it */
-.mosaic { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: clamp(14px, 2vw, 24px); }
-.mosaic figure { margin: 0; display: grid; grid-template-rows: 1fr auto; }
-.mosaic .big { grid-row: span 2; }
-.mosaic .big .shot { height: 100%; }
-.mosaic .big .shot img { height: 100%; aspect-ratio: auto; }
-.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
-.trio figure, .pair.even figure { margin: 0; }
-.wide { margin: 0; }
-.pair.even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.sky { margin-top: clamp(28px, 4vw, 44px); }
-.wip-band { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: start; }
-.wip-band .head { margin-bottom: 0; }
-.safe { margin-top: 26px; padding: 18px 18px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
-.safe ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 10px; font-size: 0.97rem; color: var(--mist); }
-.safe li b { color: var(--foam); }
-.hashes { margin: 14px 0 0; display: grid; gap: 4px; font-size: 0.8rem; }
-.hashes dt { color: var(--foam); font-weight: 700; }
-.hashes dd { margin: 0 0 6px; }
-.hashes code { overflow-wrap: anywhere; word-break: break-all; }
-.note.change { margin-top: 6px; color: var(--foam); }
-.lately { list-style: none; margin: 14px 0 0; padding: 0; display: grid; }
-.lately li { padding: 12px 0 12px 22px; border-top: 1px solid var(--line); position: relative; color: var(--foam); }
-.lately li::before { content: ""; position: absolute; left: 0; top: 1.15em; width: 8px; height: 8px; background: var(--grass); }
-
-/* where to follow it */
-.follow-label { margin-top: 10px; }
-.socials { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.socials a {
-  display: grid; gap: 4px; padding: 12px 14px; border-radius: 4px; text-decoration: none;
-  background: var(--sea); border: 1px solid var(--line); color: var(--foam);
-}
-.socials a:hover { border-color: var(--sun); }
-.socials b { font: 700 1rem/1.1 var(--display); letter-spacing: 0.02em; }
-.socials span { font-size: 0.9rem; color: var(--mist); overflow-wrap: anywhere; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 10px 20px; }
-.foot-links a { font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); text-decoration: none; }
-.foot-links a:hover { color: var(--sun); }
-
-/* horizons */
-.pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(18px, 2.4vw, 30px); align-items: start; }
-.pair figure { margin: 0; }
-
-/* biomes */
-.strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 30%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; scrollbar-color: var(--sea-lift) transparent; }
-.strip figure { margin: 0; scroll-snap-align: start; }
-.strip figcaption { font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); margin-top: 10px; }
-
-/* install */
-.install { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
-.tabs { display: flex; gap: 6px; margin-bottom: 18px; }
-.tabs button { font: 400 0.7rem/1 var(--pixel); letter-spacing: 0.05em; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line); background: transparent; color: var(--mist); cursor: pointer; }
-.tabs button[aria-selected="true"] { background: var(--sea-lift); color: var(--foam); border-color: transparent; }
-.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
-.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: baseline; }
-.steps li::before { content: counter(s); font: 700 1.2rem/1 var(--display); color: var(--sun); }
-.steps code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: var(--sea); padding: 2px 6px; border-radius: 3px; overflow-wrap: anywhere; }
-.note { margin-top: 22px; padding: 14px 16px; border-left: 3px solid var(--sun); background: var(--sea); border-radius: 0 4px 4px 0; color: var(--mist); font-size: 0.97rem; }
-.ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.keys { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
-.keys th { text-align: left; font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); padding: 0 0 12px; }
-.keys td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: baseline; }
-.keys td:first-child { width: 8.5rem; padding-right: 12px; }
-
-/* update log */
-.log { display: grid; gap: 12px; }
-.ver { border: 1px solid var(--line); border-radius: 6px; background: var(--sea); }
-.ver summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 14px 18px; cursor: pointer; list-style: none; }
-.ver summary::-webkit-details-marker { display: none; }
-.ver summary::before { content: "+"; font: 700 1.1rem/1 var(--display); color: var(--sun); width: 14px; }
-.ver[open] summary::before { content: "\2212"; }
-.ver .v { font: 700 1.15rem/1 var(--display); color: var(--sun); }
-.ver .t { font-weight: 700; color: var(--foam); flex: 1 1 16rem; }
-.ver .d { font: 400 0.68rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--mist); }
-.ver-body { padding: 0 18px 16px 46px; display: grid; gap: 10px; color: var(--mist); font-size: 0.97rem; }
-.ver-body h4 { margin: 8px 0 0; font: 400 0.72rem/1 var(--pixel); letter-spacing: 0.05em; color: var(--foam); }
-.ver-body ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
-.ver-body b { color: var(--foam); }
-.ver-body a { color: var(--sun); }
-.ver-body .get { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
-.ver-body .get span { color: var(--foam); font-weight: 700; }
-@media (max-width: 560px) { .ver-body { padding-left: 18px; } }
-
-footer { padding-block: 44px 64px; border-top: 1px solid var(--line); color: var(--mist); font-size: 0.92rem; }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: center; }
-footer p { max-width: 60ch; }
-
-@media (max-width: 860px) {
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pair, .pair.even, .install, .wip-band, .mosaic { grid-template-columns: minmax(0, 1fr); }
-  .mosaic .big { grid-row: auto; }
-  .mosaic .big .shot img { aspect-ratio: 16 / 9; }
-  .trio { grid-template-columns: minmax(0, 1fr); }
-  .bar nav a:not(.keep) { display: none; }
-  .bar .wide-only { display: none; }
-  .strip { grid-auto-columns: minmax(240px, 72%); }
-}
-@media (max-width: 560px) {
-  .grid { grid-template-columns: minmax(0, 1fr); }
-  .intro { bottom: 120px; }
-  .bar nav { display: none; }
-  .socials { grid-template-columns: minmax(0, 1fr); }
-  .bar { gap: 10px; }
-  .mark { font-size: 0.95rem; }
-  .bar-links { margin-left: auto; gap: 6px; }
-  .bar .btn { padding: 7px 8px; font-size: 0.74rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pulse { animation: none; }
-  .btn:hover, .btn:active { transform: none; }
-}
-</style>
-<link rel="preload" href="assets/fonts/alagard.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="preload" href="/assets/fonts/alagard.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/theme.css">
+</head>
+<body class="page-home">
 
 <header class="bar">
-  <a class="mark" href="#dive"><img src="assets/logo/logo_440.webp" width="440" height="183" alt="Worldfall"><span class="tag-alpha">Beta</span></a>
-  <nav aria-label="Sections">
-    <a class="keep" href="#install">Install</a>
-    <a href="#updates">Updates</a>
-    <a href="#dragons">Dragons</a>
-    <a href="#compare">3D map</a>
-    <a href="#inside">Inside</a>
-    <a href="/modding/" target="_blank" rel="noopener">Modding</a>
+  <a class="mark" href="/" aria-current="page"><img src="/assets/logo/logo_440.webp" width="440" height="183" alt="Worldfall"><span class="tag-alpha">Beta</span></a>
+  <nav class="pages" aria-label="Pages">
+    <a class="keep" href="/install/">Install</a>
+    <a href="/updates/">Updates</a>
+    <a href="/world/">World</a>
+    <a href="/towns/">Towns</a>
+    <a href="/war/">War</a>
+    <a href="/soundtrack/">Soundtrack</a>
+    <a href="/modding/">Modding</a>
   </nav>
+  <details class="menu">
+    <summary>Menu</summary>
+    <nav aria-label="Pages">
+      <a href="/install/">Install</a>
+      <a href="/updates/">Updates</a>
+      <a href="/world/">World</a>
+      <a href="/towns/">Towns</a>
+      <a href="/war/">War</a>
+      <a href="/soundtrack/">Soundtrack</a>
+      <a href="/modding/">Modding</a>
+    </nav>
+  </details>
   <div class="bar-links">
     <a class="btn ghost" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>
     <a class="btn ghost" href="https://www.tiktok.com/@worldfall3d" target="_blank" rel="noopener">TikTok</a>
@@ -289,166 +51,56 @@ footer p { max-width: 60ch; }
 <main>
   <section class="dive" id="dive" aria-labelledby="title">
     <div class="screen">
-      <img class="poster" src="shots/hero.webp?v=98" alt="First person in a village by day: stone cottages with blue roofs on the left, an apple bush and villagers on the grass, autumn trees behind." fetchpriority="high">
+      <img class="poster" src="/shots/hero.webp?v=98" alt="First person in a village by day: stone cottages with blue roofs on the left, an apple bush and villagers on the grass, autumn trees behind." fetchpriority="high">
       <div class="scrim"></div>
 
       <div class="intro">
         <p class="eyebrow">A first-person mod for WorldBox</p>
-        <h1 id="title" class="logo-h1"><img src="assets/logo/logo_1400.webp" srcset="assets/logo/logo_900.webp 900w, assets/logo/logo_1400.webp 1400w" sizes="(max-width: 780px) 82vw, 640px" width="1400" height="581" alt="Worldfall" fetchpriority="high"></h1>
+        <h1 id="title" class="logo-h1"><img src="/assets/logo/logo_1400.webp" srcset="/assets/logo/logo_900.webp 900w, /assets/logo/logo_1400.webp 1400w" sizes="(max-width: 780px) 82vw, 640px" width="1400" height="581" alt="Worldfall" fetchpriority="high"></h1>
         <p class="lede">Zoom in on anyone in your world and keep going, down through the trees and into their eyes.</p>
+        <div class="ctas hero-ctas"><a class="btn" href="/install/">Install</a><a class="btn ghost" href="/updates/">What&rsquo;s new</a></div>
       </div>
     </div>
   </section>
 
-  <section class="band" id="install">
+  <section class="band" id="explore">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Free beta. No mod loader needed</p>
-        <h2>Install Worldfall</h2>
-        <p>One file in WorldBox's own mods folder. The mod is free; donations on Ko-fi are optional and don't unlock anything.</p>
+        <p class="eyebrow">See more</p>
+        <h2>Into the world</h2>
       </div>
-      <div class="install">
-        <div>
-          <div class="tabs" role="tablist" aria-label="Your computer">
-            <button role="tab" id="tab-win" aria-selected="true" aria-controls="steps-win">Windows</button>
-            <button role="tab" id="tab-mac" aria-selected="false" aria-controls="steps-mac">Mac</button>
-            <button role="tab" id="tab-nml" aria-selected="false" aria-controls="steps-nml">NeoModLoader</button>
-          </div>
-          <ol class="steps" id="steps-win" role="tabpanel" aria-labelledby="tab-win">
-            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>.</span></li>
-            <li><span>Open <code>worldbox_Data\StreamingAssets\mods</code> (make the <code>mods</code> folder if it isn't there).</span></li>
-            <li><span>Put <code>Worldfall.dll</code> in that folder.</span></li>
-            <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
-            <li><span>Restart WorldBox.</span></li>
-          </ol>
-          <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
-            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>.</span></li>
-            <li><span>Right-click the WorldBox app and choose <b>Show Package Contents</b>.</span></li>
-            <li><span>Go to <code>Contents/Resources/Data/StreamingAssets/mods</code> (make the <code>mods</code> folder if it isn't there) and put <code>Worldfall.dll</code> there.</span></li>
-            <li><span>Start WorldBox, open Settings and turn on <b>Experimental Mode</b>.</span></li>
-            <li><span>Restart WorldBox. On an Apple Silicon Mac, the NeoModLoader version works better.</span></li>
-          </ol>
-          <ol class="steps" id="steps-nml" role="tabpanel" aria-labelledby="tab-nml" hidden>
-            <li><span>Install NeoModLoader once by hand: subscribing to it on the Workshop only downloads it. Get <a href="https://github.com/WorldBoxOpenMods/ModLoader/releases/download/latest/NeoModLoader.dll" target="_blank" rel="noopener"><b>NeoModLoader.dll</b></a>, or copy it from <code>steamapps/workshop/content/1206560/3080294469</code> if you subscribed.</span></li>
-            <li><span>In Steam, right-click WorldBox, then <b>Manage &gt; Browse local files</b>, and put it in <code>worldbox_Data/StreamingAssets/mods</code> (Windows, Linux, Steam Deck). On a Mac: <b>Show Package Contents</b> on the app, then <code>Contents/Resources/Data/StreamingAssets/mods</code>. Make the <code>mods</code> folder if it isn't there.</span></li>
-            <li><span>Start WorldBox, turn on <b>Experimental Mode</b> in Settings, and restart.</span></li>
-            <li><span>Subscribe to Worldfall on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener"><b>Steam Workshop</b></a>, or drop <b>Worldfall_NML.zip</b> in the <code>Mods</code> folder NeoModLoader made beside the game. Start WorldBox: Worldfall shows in NeoModLoader's mod list.</span></li>
-            <li><span>Android: set up <a href="https://github.com/MelvinShwuaner/ModLoader" target="_blank" rel="noopener">NeoModLoader for Android</a> first, then put the <code>Worldfall</code> folder from <b>Worldfall_Android.zip</b> (sized for phones) in <code>Android/data/com.mkarpenko.worldbox/Mods</code>. Early: tried on few phones.</span></li>
-            <li><span>Use one install, not both: if <code>Worldfall.dll</code> is also in <code>StreamingAssets/mods</code>, that one runs instead.</span></li>
-          </ol>
-          <div class="safe">
-            <p class="eyebrow">Is it safe?</p>
-            <ul>
-              <li><b>Only download it from this page.</b> The zip holds three files: <code>Worldfall.dll</code>, an install guide and the licence. No installer, no mod loader, no admin rights.</li>
-              <li><b>It only goes online when you ask.</b> Only when you host or join a multiplayer game, or browse packs in F2 &gt; Mods. Otherwise it only runs inside WorldBox, and writes its log, settings and screenshots to WorldBox's own save folder.</li>
-              <li><b>Why an antivirus might warn.</b> To turn WASD into first-person movement, the mod changes a few of WorldBox's own functions in memory while the game runs. Some antivirus tools flag that technique. Nothing on disk is changed: delete the DLL and the game is back to normal.</li>
-              <li><b>Check your download.</b> Compare its SHA-256 with these (Windows: <code>certutil -hashfile Worldfall.zip SHA256</code>), or scan it on virustotal.com.</li>
-            </ul>
-            <dl class="hashes">
-              <dt>Worldfall.zip</dt><dd><code>aaf1eb3a98fe887b1aa34458971d1bc93f103247968e25e0015b01f828699a43</code></dd>
-              <dt>Worldfall_NML.zip</dt><dd><code>b9bd7248e49f79ddc9999ceac15bec2e24adebcd8801f95c43ab4ef2c0195b38</code></dd>
-              <dt>Worldfall_Android.zip</dt><dd><code>d699f7a66e08acae4a6bbb57428bf7a3f21e8587d795296fb2eae52fd77d91a0</code></dd>
-              <dt>Worldfall.dll</dt><dd><code>89e92542bcfe839220827fe4420ccdc6ba451c024ea57001e1b09bb362403f27</code></dd>
-            </dl>
-          </div>
-          <p class="note">This is a beta build, so you may run into bugs; reports on the Workshop page help. WorldBox also turns Experimental Mode off after every game update: if the mod stops loading, turn it back on and restart.</p>
-          <div class="ctas">
-            <a class="btn" id="download" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall.zip">Download beta 0.9.8 (Worldfall.zip, 50 MB)</a>
-            <a class="btn ghost" id="download-nml" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_NML.zip">NeoModLoader version (Worldfall_NML.zip, 50 MB)</a>
-            <a class="btn ghost" id="download-android" href="https://github.com/s3cond2/worldfall/releases/latest/download/Worldfall_Android.zip">Android version (Worldfall_Android.zip, 49 MB, early)</a>
-            <a class="btn ghost" id="workshop" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop (NeoModLoader)</a>
-            <a class="btn ghost" href="https://ko-fi.com/worldfall" target="_blank" rel="noopener">Support on Ko-fi</a>
-          </div>
-          <p class="note">Need an older version? Every earlier release is in the <a href="#updates">update log</a> below.</p>
-        </div>
-        <div>
-          <table class="keys">
-            <thead><tr><th scope="col">Key</th><th scope="col">In first person</th></tr></thead>
-            <tbody>
-              <tr><td><kbd>G</kbd></td><td>Take control of the selected creature (and let go again)</td></tr>
-              <tr><td>Mouse, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Look around, walk or swim; hold <kbd>Shift</kbd> to sprint</td></tr>
-              <tr><td>Left click</td><td>Attack, or hold on a tree, rock or crop to chop, mine or harvest</td></tr>
-              <tr><td>Right click</td><td>Guard; raise it as a blow lands to parry</td></tr>
-              <tr><td><kbd>E</kbd></td><td>Talk, open a door, board a boat. Hold it for everything else</td></tr>
-              <tr><td>Hold <kbd>Q</kbd></td><td>Tools: torch, compass, food, bandage</td></tr>
-              <tr><td><kbd>Tab</kbd></td><td>Your bag, crafting, magic and people</td></tr>
-              <tr><td><kbd>M</kbd></td><td>The world: map, news, war, orders, council</td></tr>
-              <tr><td><kbd>Y</kbd></td><td>Plan your town</td></tr>
-              <tr><td><kbd>X</kbd></td><td>Your kind's own ability</td></tr>
-              <tr><td>Middle click</td><td>Take over the creature you look at</td></tr>
-              <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>On the map: the 3D god view; fly a free camera</td></tr>
-              <tr><td><kbd>F1</kbd> <kbd>F2</kbd></td><td>All the controls; the mod's settings</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="updates">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Update log</p>
-        <h2>What's new</h2>
-        <p>Every public version, newest first. Older versions stay downloadable here if you need one; the newest is recommended.</p>
-      </div>
-      <div class="log">
-        <details class="ver" open>
-          <summary><span class="v">0.9.8</span><span class="t">Statues, VR, shape the land, one world</span><span class="d">2026-10-13</span></summary>
-          <div class="ver-body">
-            <p>Fixed on 16 October: the endless digging sound, towns swapping your weapon, the bedroll's slot, caves, the pickaxe and ending a romance. Updated in the afternoon of 15 October: pack models with their own image textures. Updated later on 15 October: hero statues for the four first peoples, easier VR, a settings menu in sections with help on every row, the Classic look and still ice. Earlier on 15 October: shape the land (dig and fill, Terrainy worlds, cliffs, lakes, caves, earthworks dug by hired crews), a sea with a floor, courtship over days, people who speak in their own voice, and much faster big worlds. Multiplayer is much easier to join: a short code, Steam invites, no port forwarding and an update button when versions differ. Lightning strikes are redrawn from the cloud to the ground. Updated on 14 October: kings order ships and guards, lights to set down, forging with quality, people who carry what they work with and speak in their own voice, slower years, and every weapon remodelled. Updated again that evening: the map and 3D agree, finding anyone in town, and far trees and buildings in 3D.</p><h4>General fixes (16 October)</h4><ul><li><b>Digging sound.</b> The shovel's sound no longer plays for ever. It was the game's held shovel-power sound, which never stops once started as a one-shot; the town's dig crews set it off too.</li><li><b>Your weapon stays yours.</b> Towns no longer swap a piece of your gear for one from their armory. The body you control is left alone; arms come through the smith, loot and the armory trade as before.</li><li><b>Bedroll.</b> After a night on the bedroll your weapon's slot is chosen again, so the next click isn't another night and another save.</li></ul><h4>Fixed on 16 October</h4><ul><li><b>Caves.</b> <kbd>E</kbd> at a cave's mouth goes in with a shovel or a pickaxe out.</li><li><b>Pickaxe.</b> The pickaxe from a trader or the workbench mines rock and ore.</li><li><b>Ending it.</b> “It's over between us” works when your partner lives in another realm.</li></ul><h4>Added in the afternoon of 15 October</h4><ul><li><b>Textures on pack models.</b> A pack model with an image plugged into its material's Base Color is drawn with it, through its UV map: PNG or JPEG, packed into the .glb by Blender's exporter or saved beside it. A textured material keeps its image where the game would recolour it, with the kind's grain left off; light, shadows and the finish still apply. Images of 64 px or less are crisp, bigger ones blended (<code>"textures": "crisp"</code> or <code>"smooth"</code> in worldfall.json); pixels under half alpha are holes. The pack's card lists every texture it drew.</li><li><b>Fixed: white models on the GPU renderer.</b> Right after the textures update every model (trees, people, your hands) was drawn white on the GPU renderer. The texture sampler now only runs for a pack model that carries an image.</li></ul><h4>Added later on 15 October</h4><ul><li><b>Statues.</b> Humans, elves, orcs and dwarves each raise their own hero on a round column you can climb, with a ruin of its own when pulled down. Every statue is one size now.</li><li><b>Other peoples' houses.</b> Cats, bees, ghosts and the other peoples now give you land for a house.</li><li><b>Moving to a new village.</b> When your king founds a new town, a herald asks you first instead of sending you.</li><li><b>Stuck.</b> Valleys in a Terrainy world shift slowly instead of jumping, and never under a house. If you are held fast, you are eased out.</li><li><b>Ice.</b> Frozen water is a still white sheet with pale cracks, not open sea.</li><li><b>VR.</b> Effects match in both eyes and shadows are drawn once for both. Rooms are real 3D in the headset. Point at the wheel to pick, the hotbar is on your wrist, the sticks move a highlight through windows. Menu button: tap for settings, hold for the map. Left-handed mode in <kbd>F2</kbd> &gt; VR.</li><li><b>Settings.</b> <kbd>F2</kbd> is sorted into sections, and every setting has a small <b>?</b> that says what it changes.</li><li><b>Classic.</b> <kbd>F2</kbd> &gt; Graphics &gt; Look: the painterly picture with crisp pixels in the distance and deep blue nights. It replaces the GPU finish row.</li><li><b>Far creatures.</b> Creatures far away and out of sight are simulated less often while you play in first person (<kbd>F2</kbd> &gt; Graphics &gt; Crowds).</li><li><b>Fixed: bright ice on the CPU.</b> On the CPU renderer frozen water is drawn bright, as on the GPU, not dark blue-grey.</li></ul><h4>Added on 15 October</h4><ul><li><b>Flat or Terrainy.</b> the first time you enter a world in first person it asks which land it has. Terrainy carves valleys with the rivers in their beds, ridges, hill terraces, mountain tarns that spill as streams and waterfalls, and sea cliffs under the hills. Flat is the land as before. The answer is kept with the world.</li><li><b>Dig and fill.</b> a shovel or a pickaxe on the hotbar; hold the left button on the ground to dig, the right to fill. A shovel moves soil and sand, a pickaxe rock. Digging gives dirt, sand, stone and ore; filling spends them. Dug earth is raw and greens over days. Dig deep enough and the game's own tile changes, so the map, towns and water agree.</li><li><b>Cliffs.</b> steep faces show their rock in layers with ledges. A drop of more than two tiles hurts you; everyone slows on a cliff.</li><li><b>Lakes.</b> a hollow dug above the sea fills with rain over a day or two, spills as a stream with a waterfall at each drop, and fields within three tiles of any water grow a quarter faster.</li><li><b>Caves.</b> cut three bands into a rock face with a pickaxe and it opens: ore veins and dens with beasts, often a hoard deep in, and one cave in four is a dungeon with a boss guarding a special weapon. Bring a torch.</li><li><b>Earthworks.</b> in planning (<kbd>Y</kbd>) the Earthworks tab drags a job over the ground (level, lower, raise, moat, canal, terrace). The town's idle folk dig it for a wage per tile; a dig crew can be hired for a day; a king orders royal works with <kbd>R</kbd> from the treasury. Building sites are levelled by their builders as they go up. Towns no longer build on cliffs.</li><li><b>Earthshaping.</b> a spell to raise, sink or split the ground at range, taught by an enchanter once you pass a teacher's trial.</li><li><b>Climb up.</b> jump at a rock, a roof, a stack of crates or a wall and you pull yourself onto it.</li><li><b>Rocks and bushes.</b> rocks and ore take the look of the land they lie in, with a rough grain; fruit bushes match their biome and are smaller.</li><li><b>The sea has a floor.</b> shallows show the sand through clear water, deeper water darkens with depth. Ships heave, pitch and roll on the one sea everyone swims in.</li><li><b>Courtship over days.</b> a romance meter fills over days of talk and fades when you are away; flirting is an exchange answered gently, boldly, playfully or sincerely, three a day; ask about them and remember what they say; hold <kbd>Tab</kbd> for romance, opinion, mood and devotion; new courting quests, then a ring from the workbench and a proposal on one knee.</li><li><b>Voices.</b> people say their lines in their own voice, made of the game's own talk sounds (F2 &gt; Sound &gt; Voices). Women and children sound their age.</li><li><b>Young animals.</b> pups, kittens, chicks and a rooster have models of their own.</li><li><b>Faster in big worlds.</b> a town of 4,700 people went from 11 to about 20 fps in first person with the same picture. Trees stay past 30 tiles; the flat map is held while the 3D god view covers it; F2 &gt; Graphics &gt; World steps.</li></ul><h4>Added on the evening of 14 October</h4><ul><li><b>The map and 3D agree.</b> Day and night run on the game's map too (<kbd>F2</kbd> &gt; Game &gt; Map night). Houses on the map light their windows only while someone is in and awake, draw curtains at dusk, smoke while someone is home and open the door as people pass.</li><li><b>Look inside.</b> Zoomed in close on the map, the roof under the mouse fades to show the floor plan and who is in it. Click someone to select them; <kbd>G</kbd> takes them over and you wake where they were. Leave a body indoors and the view rises out through the roof.</li><li><b>People really inside.</b> Everyone in a house has a place there, the same on the map and in 3D: their bed, a seat by the hearth, the table. Near you, people use the door, sit where they sit down, and those with a torch carry its light.</li><li><b>Finding people.</b> Ask anyone &ldquo;I'm looking for someone.&rdquo; for a name. The town hall's ledger lists the town's people.</li><li><b>Far trees and buildings in 3D.</b> Past the detail distance they are their 3D models instead of the game's sprites (<kbd>F2</kbd> &gt; Graphics &gt; Distance; Low keeps sprites; GPU renderer only).</li><li><b>Classic finish.</b> Closer to the CPU look, with darker blue nights.</li><li><b>3D god view.</b> Faster over big towns. Crowd detail (<kbd>F2</kbd>, off by default) animates far people on the graphics card.</li><li><b>House stairs.</b> No more view jumps going up and down, and fewer invisible walls in rooms.</li><li><b>Campfires.</b> Walk over the stones and under the pot. Step into the flames and you catch fire.</li><li><b>Smoke and mist.</b> On the GPU renderer they fade where they meet the ground and trees instead of cutting a hard line.</li><li><b>Packs.</b> Models made in metres come out the right size, and &ldquo;fit&rdquo; scales a model to the one it replaces.</li></ul><h4>Added earlier on 14 October</h4><ul><li><b>Ships on order.</b> On your town's card on the war map, order transport, trading and fishing ships from the king's purse. A free dock builds them, up to three of each kind per dock.</li><li><b>Quicker boarding.</b> Soldiers near a ship step aboard at once, and the order bar has a Board button.</li><li><b>Guards.</b> As king, hold <kbd>E</kbd> on someone to order your guards to kill or execute them. Killing a foreigner offends their realm.</li><li><b>Lights.</b> Set down standing torches, wall torches, lamp posts and braziers anywhere on land (<kbd>Y</kbd>, Lights). Each costs supplies from your bag, and they never go out. Towns put up their own lights as they grow.</li><li><b>Forging.</b> Crafting is a grid with a recipe card: stats against what you wear, what you have and need, and the odds of each quality. Pieces are forged in a queue with hammer blows at the workbench. Each workbench level adds a roll for quality.</li><li><b>Carried items.</b> People carry what they work with: logs and sheaves on the shoulder, stone and ingots in their arms, sacks over the shoulder. The item on your hotbar is in your hand and goes to your mouth when you eat. The ten work tools are remodelled.</li><li><b>Voices.</b> People speak in their own voice, by their traits, job, age and mood, and remember you between talks.</li><li><b>Rivals.</b> You can court someone who already has a partner. The partner gets jealous: first a warning, then a brawl. Being seen costs you standing in town.</li><li><b>Subspecies.</b> All ten mutation skins and eighteen kinds of egg in 3D. Several creatures fixed, among them the fire spirit, fire slug, bioblob and unicorn.</li><li><b>Slower years.</b> Three slower speeds in the game's hourglass, and F2 &gt; Game &gt; Years pass.</li><li><b>Weapons.</b> All 53 held weapons remodelled: crisp forged and cut forms, real metals, one-colour grips, flat butt ends. Mythril glows in its rims and runes, adamantine in crusted lava cracks.</li><li><b>Fog and effects.</b> The glow of fires, torches and blasts no longer washes the picture in fog.</li></ul><h4>New</h4><ul><li><b>Join codes.</b> Hosting shows a short code with a Copy button. A friend types it in to join. The code holds your address, so nothing else is needed.</li><li><b>Steam invites.</b> Steam players join through Steam, with an Invite friends button on the host's card.</li><li><b>Same network.</b> Worlds hosted on your home network are listed by themselves. Phones and Macs join from this list or with a code.</li><li><b>Update and join.</b> When two players are on different versions, the older one can update from where they got the mod (Steam Workshop or this page) and restart straight into the world.</li><li><b>Lightning.</b> A leader feels down from the cloud, then a branching white stroke lands in a blue glow, with sparks and electricity over the ground, two fainter restrikes and a glowing scorch. Far strikes still show as a bright fork.</li></ul><h4>Changed</h4><ul><li><b>No port forwarding.</b> The host's router port is opened automatically where the router allows it (UPnP).</li><li><b>Public network warning.</b> The host card warns when Windows treats your network as Public, which blocks others from joining.</li><li><b>Droppings.</b> Animal droppings are a soft brown coil instead of something that looked like stones.</li><li><b>Home sizes.</b> Homes no longer wait a day before they grow another size.</li></ul><h4>Fixed</h4><ul><li>A refused player only saw "Connection closed". The restart after syncing mods didn't wait for the game to close.</li><li><b>Copied gear in multiplayer.</b> A weapon or armour a joiner put away came back in their hand while it was also in their bag.</li><li><b>Gear lost to other mods.</b> A piece another mod keeps off your hand now stays in your bag instead of vanishing.</li><li><b>Errors on older WorldBox.</b> On WorldBox older than 0.51 Worldfall now stays off and says how to update, instead of throwing errors every frame. A repeating error is logged once a minute, so the game's console no longer slows the game.</li><li><b>View scene from inside.</b> Kings couldn't open View scene from inside. It now opens from a house, a ship's cabin or a mine, and you command the battle from there.</li></ul>
-            <p class="get"><span>Download:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall_NML.zip">Worldfall_NML.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.8/Worldfall_Android.zip">Worldfall_Android.zip</a> (early)</p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.7</span><span class="t">Faster rooms, storage, sharper weapons</span><span class="d">2026-10-12</span></summary>
-          <div class="ver-body">
-            <p>Rooms draw much faster when you face a window, houses you own have storage, your family follows you indoors, and the weapon models are reworked with embers on glowing weapons.</p><h4>New</h4><ul><li><b>Storage.</b> In a house you own, press <kbd>E</kbd> at a chest, crate, barrel or sack to store items and gear. Crafting at home can use what is stored.</li><li><b>Glowing weapons.</b> Mythril, adamantine and magic weapons in your hands shed embers or sparks, more when you swing.</li></ul><h4>Changed</h4><ul><li><b>Faster rooms.</b> Facing a window in a house costs far less: about twice the frame rate on a big world.</li><li><b>Weapon models.</b> Axes, spears, swords, hammers, bows and staffs reworked to match the game's icons more closely, with more detail on every metal.</li><li><b>Family comes in.</b> Family set to Follow walk into the house after you. A locked door also lets in your household and the house's residents.</li><li><b>Sleeping.</b> The sleep prompt shows only when you stand at a bed and face it.</li></ul><h4>Fixed</h4><ul><li>Someone who gave you a courting task could be married off by the game while the task ran.</li><li>On Apple Silicon Macs with both the website and Workshop copies installed, the website copy now steps aside for the NeoModLoader one.</li><li>The mod no longer crashes the game while loading on a Mac. 3D sound stays off on macOS, Apple Silicon Macs start at a sharper picture, and the dark blocks and magenta specks around the sun are gone.</li><li>A crash in fmodstudio.dll while sounds started and stopped.</li><li>In the largest human houses, a window in the wall between the main room and the side room showed the street with a room behind it.</li><li>Arrows stuck in a wall, house or tree stayed after it was destroyed. A joining player's power on <kbd>X</kbd> did nothing in the host's world.</li></ul>
-            <p class="get"><span>Download:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.7/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.7/Worldfall_NML.zip">Worldfall_NML.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.7/Worldfall_Android.zip">Worldfall_Android.zip</a> (early)</p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.6</span><span class="t">Houses fixed up</span><span class="d">2026-10-12</span></summary>
-          <div class="ver-body">
-            <p>Fixes from bug reports on 0.9.5, released on the Steam Workshop only. The website download went from 0.9.5 to 0.9.7, which includes all of these.</p><h4>Fixed</h4><ul><li><b>Talking and fighting by a house.</b> People near an open door can be talked to and hit again, and prompts no longer flash.</li><li><b>Walking in and out.</b> No jump in view height at the doorway and no freeze stepping in. Same pace inside as outside.</li><li><b>Doors.</b> Look at the door: <kbd>E</kbd> opens or shuts it at once, hold <kbd>E</kbd> to leave.</li><li><b>No drowning at home.</b> Homes by a river no longer drown you inside.</li><li><b>Every room reachable.</b> Side rooms of the bigger houses have a doorway, and every stair can be reached.</li><li><b>Fuller rooms.</b> A fire on every ground floor and more furniture. A gap that showed the sky by the stairwell is closed.</li><li><b>Houses that change.</b> A tent that grows into a house, or a plot that is built, can be walked into right away.</li><li><b>Inventory and Character tab.</b> Each stack has its own count; taking a weapon away no longer makes copies.</li><li><b>Stuck controls.</b> Movement no longer stays locked after a window or talk closes.</li><li><b>Crashes.</b> On Mac and Linux the game starts safely after a graphics crash. New Light mode at the top of <kbd>F2</kbd> &gt; Graphics.</li><li><b>Multiplayer (early).</b> Steam and website copies play together on the same version.</li></ul>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.5</span><span class="t">Houses you live in, a village of your own</span><span class="d">2026-10-12</span></summary>
-          <div class="ver-body">
-            <p>Houses are real rooms now, with the people who live there, doors, locks and curtains. Sit, sleep and fight in them. Found and plan your own village, fly a free camera over the world, and play with friends in early multiplayer. Still early and partly untested: multiplayer, VR, the weapon models, controllers and the Steam Deck.</p><h4>New</h4><ul><li><b>Real rooms.</b> Human houses have rooms the size of the house outside, and the bigger ones have an upstairs. Walk straight in through the door. On the GPU, windows and the open door show the town outside.</li><li><b>Life at home.</b> The people in a room are the ones the game has inside. Sleepers lie in bed, and the rest sit by the fire or at the table. Doors swing, chimneys smoke, and windows are lit while someone is up.</li><li><b>Doors and locks.</b> Press <kbd>E</kbd> at a door to open or shut it, or walk into it. A locked home opens only to family and the monarch. Lock yours from its Home card.</li><li><b>Curtains.</b> <kbd>E</kbd> at a window draws its curtains. Hold <kbd>E</kbd> for every curtain in the room. With every curtain drawn and the door shut, the street can't see what you do.</li><li><b>Sleep to save.</b> Sleeping in a bed you may use, or in a bedroll outdoors, saves the world. Loading the save puts you back in the same body.</li><li><b>Fights indoors.</b> Houses are no longer safe: enemies follow you in. Fight in any room with any weapon, and jump in rooms too.</li><li><b>Sitting and kneeling.</b> Tap <kbd>P</kbd> to sit, hold <kbd>P</kbd> for poses, or press <kbd>E</kbd> on a seat. Sitting by a fire restores stamina faster. Kneeling to your king pleases him.</li><li><b>Your own village.</b> <kbd>Y</kbd> opens town planning. Found a village round a bonfire, place the game's buildings, drag rows of homes along a street and plan walls. Townsfolk carry materials to the plans.</li><li><b>Building by hand.</b> Strike a site with a hammer to build it. Idle townsfolk come to help.</li><li><b>Taxes.</b> Rulers are paid the game's taxes once a season. A king sets the rate on the Council page.</li><li><b>Free flight.</b> <kbd>F</kbd> on the map flies a camera anywhere. Hold <kbd>F</kbd> in first person to rise out of the body.</li><li><b>Multiplayer (early).</b> <kbd>F2</kbd> &gt; Multiplayer hosts your world for up to 8 players, with chat, parties and Steam voice. Joining over Steam is untested.</li><li><b>Action and tool wheels.</b> Hold <kbd>E</kbd> for talk, insult, steal, star, take over or hijack. Hold <kbd>Q</kbd> for the torch, compass, food or a bandage.</li><li><b>Torch and compass.</b> Light your torch at a fire and hold it out; rain puts it out. The compass points to your nearest task.</li><li><b>Quest levels.</b> After ten town quests, put a site of the dead to rest. After fifteen of those, hold the town against a raid. Rewards include traits, weapons with powers and spells.</li><li><b>Magic page and learned moves.</b> <kbd>Tab</kbd> &gt; Magic picks what <kbd>X</kbd> casts. Hard quests teach a dodge, a heavy blow, a lunge or a jump attack.</li><li><b>Faces and regalia.</b> People of the four peoples look like individuals. Human kings, captains, soldiers and guards wear their realm's colours, and town halls fly its flag.</li><li><b>Weapon models (early).</b> All 44 metal weapons in the game's metals. Mythril and adamantine glow at night.</li><li><b>Wonders, trees and rocks.</b> Waypoints, spawners, brains and mage towers in 3D. Soft tree crowns, burnt trees that smoulder, and rocks that crack as they are mined and burst when mined out.</li><li><b>Sun and shadows.</b> On the GPU, the sun follows the seasons, the land casts soft shadows and the moon has phases. Shadow settings, a dark fantasy look, quality presets and a frame counter in <kbd>F2</kbd> &gt; Graphics.</li><li><b>Workshop packs.</b> <kbd>F2</kbd> &gt; Mods loads packs of models, sounds and text while you play.</li><li><b>Controllers and the Steam Deck (early).</b> <kbd>F2</kbd> &gt; Controls &gt; Controller. Not yet tried on a real Deck.</li><li><b>Also:</b> four bigger world sizes, the crown is offered before you're made king, build a boat when stranded, your house on the maps, <kbd>F1</kbd> help, Brazilian Portuguese and Russian.</li></ul><h4>Changed</h4><ul><li>News and Council are pages of <kbd>M</kbd>, so <kbd>K</kbd> and <kbd>U</kbd> are gone. Middle click takes over a creature and <kbd>C</kbd> pings. <kbd>F1</kbd> lists every key.</li><li><kbd>F2</kbd> has eight tabs: Graphics, Controls, Game, Sound, VR, Character, Multiplayer and Mods.</li><li>Indoors is quiet, and rain drums on the roof. Creature sounds carry as far as they would for someone standing there.</li><li>One person has three deals a day for you.</li><li>Rooms on the GPU are about as fast as outdoors, and busy towns draw 15-25% faster. New options for very big worlds.</li><li>On Apple Silicon Macs, use the NeoModLoader version.</li></ul><h4>Fixed</h4><ul><li>First person froze for up to two seconds about once a minute.</li><li>The sound engine could crash the game indoors or with 3D sound on.</li><li>First person could end when a building in view turned to ruin.</li><li>Others' arrows and shots passed through houses and walls. Several attackers caused endless parries.</li><li>Bodies blocked doorways and could shut you in a room.</li><li>Kills with the game's spells didn't count for you, and starving counted as blows against you.</li><li>Bands of shadow crawled over walls and roofs, and meteors slid in from the side.</li><li>Many more fixes to towns, the bag, crafting, quests, packs and controls.</li></ul>
-            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.5/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.5/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.4</span><span class="t">VR, the inventory and the king's war</span><span class="d">2026-10-08</span></summary>
-          <div class="ver-body">
-            <p>Play in a VR headset, carry a real inventory with a hotbar, guard and parry, and command a king's armies like a strategy game. Also snow, tornadoes, seasons, lock-in runs, peace terms, Chinese and Korean. Version 0.9.3 was never released on its own, so this covers both.</p><h4>New</h4><ul><li><b>VR headsets (early).</b> Play first person through OpenXR (Quest Link or Air Link, SteamVR, Virtual Desktop, Windows Mixed Reality) from <kbd>F2</kbd> &gt; VR. Your arms follow the controllers.</li><li><b>Inventory.</b> <kbd>Tab</kbd> shows you as a 3D figure in what you wear, with a slot bag, spare gear and crafting. Hold <kbd>Tab</kbd> to use it while you walk.</li><li><b>Guard and parry.</b> Hold the right mouse button to block. Raise it as a blow lands to parry. Enemy blows wind up where you can see them.</li><li><b>King's orders.</b> Select warriors and right-click to send them. Flags carry Attack, Wait, Destroy, Kill or Pillage orders. Control groups jump between fronts, and battles can be watched in 3D.</li><li><b>Snow and storms.</b> Snow builds up and melts, tornadoes hang from their own storms, and rain splashes round you.</li><li><b>Hotbar.</b> The bag's bottom row. The mouse wheel or <kbd>1</kbd> to <kbd>8</kbd> picks what's in your hand.</li><li><b>Workbench.</b> Your house's tier sets what you can craft at home.</li><li><b>Bandages and salves.</b> Craft them and heal yourself or anyone hurt.</li><li><b>Looting and hunts.</b> Take what the fallen carried, butcher carcasses for meat, and hunt herds out on the map.</li><li><b>Armor in 3D.</b> All of the game's armor, fitted to every body. Zombies wear torn clothes. The flame sword burns as you swing it.</li><li><b>Meeting people.</b> Say hello with <kbd>E</kbd> to learn a stranger's name. Contacts sit beside the inventory.</li><li><b>Courting.</b> Win someone's heart with the right words and courting tasks.</li><li><b>Teachers and trials.</b> Learn traits for a fee and a trial. Smiths forge new wares each dawn.</li><li><b>The daily board.</b> Up to nine contracts a town every dawn.</li><li><b>The war map.</b> Every realm with its borders, alliances and wars. Troops can board ships.</li><li><b>Peace terms.</b> Peace takes both sides: grudges, envoys, gold or towns.</li><li><b>The royal court.</b> Five councillors with bonuses, and holding court from the throne.</li><li><b>Ship hijack.</b> <kbd>Shift</kbd>+<kbd>E</kbd> takes a ship.</li><li><b>Lock-in runs.</b> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> locks you into one life for a scored run. As king, bring down a real rival and hold its towns to become immortal.</li><li><b>Towns.</b> Halls and the capital keep in 3D, standing with each town and realm, seasons, and a house plot of your own.</li><li><b>World.</b> Effects for every biome, darker nights with fireflies, waves on the open sea, and the whole map in view.</li><li><b>3D sound.</b> Sounds come from where they happen.</li><li><b>Sword slicing.</b> A killing blow from a top-tier sword cuts the body in two.</li><li><b>Walking.</b> People walk with planted feet and look at you. Stairs and roofs can be walked on, and you can climb mountains.</li><li><b>Languages.</b> Simplified Chinese and Korean.</li></ul><h4>Changed</h4><ul><li>Right click is the guard. The kick is gone.</li><li>The people list moved into the <kbd>Tab</kbd> inventory.</li><li>War flags are planted with <kbd>Shift</kbd> + right click.</li><li>The GPU renderer is the default.</li><li>Looking up and down tilts the camera instead of stretching the picture.</li></ul><h4>Fixed</h4><ul><li>Enemies could hit you through the walls of a house or mine.</li><li>Harbor piers drained stamina until you drowned.</li><li>Friendly fire off didn't spare your own people.</li><li>Renamed kingdoms and towns kept their old names.</li><li>The creature you control could starve in seconds.</li></ul>
-            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.4/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.4/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.2</span><span class="t">Trade, quests and the king's war</span><span class="d">2026-10-06</span></summary>
-          <div class="ver-body">
-            <p>Money and trade, quests that are explained before you take them, a war map with six fronts, careers in the army and controls for phones. Also the first NeoModLoader and Steam Workshop release.</p><h4>New</h4><ul><li><b>Trade.</b> Buy and sell with anyone. Prices follow what things are worth and who you are dealing with. Your coin and gold show on screen.</li><li><b>Armories and guards.</b> Buy weapons and armor from a town's armory, hire guards who follow you and fight for you, or pay a realm for protection.</li><li><b>Quest briefings.</b> Quest givers think it over, explain the job, answer your questions about it and sum it up before you agree.</li><li><b>Six war flags.</b> As king, plant up to six numbered flags on the war map <kbd>M</kbd> and send a separate band to hold each one.</li><li><b>Fleet orders.</b> Kings send their ships to a spot and choose what they fire at.</li><li><b>War chest.</b> The king's strikes and storms are paid for with the kingdom's kills, from bandit raids up to an atomic bomb.</li><li><b>Enlist.</b> Join the army or lead settlers out to found a new village. Soldiers see the king's orders and their captain on <kbd>M</kbd>, and can be promoted to captain.</li><li><b>Leave or join a town.</b> Leave your town for good, or ask a leader to let you move in.</li><li><b>Character tab.</b> In <kbd>F2</kbd>, give yourself weapons, armor and traits, turn friendly fire on or off, and mark foes and friends.</li><li><b>Family follows you.</b> Your partner and children come with you, and move with you if you change towns.</li><li><b>People you have met.</b> A list of everyone you have talked to, with when you met them.</li><li><b>World news.</b> Press <kbd>U</kbd> for what is happening across the world, with an alert when your realm is attacked.</li><li><b>Headshots.</b> Your own aimed blows and shots hit harder on the head. Fights between other creatures are unchanged.</li><li><b>Blocks and parries shown.</b> Blocked, dodged and parried hits are marked, so a hit never fails without a reason.</li><li><b>Phones and touch screens.</b> A touch stick and buttons, landscape in first person, and lighter settings on phones.</li><li><b>NeoModLoader version.</b> A separate download for NeoModLoader players, also on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>.</li></ul><h4>Changed</h4><ul><li>First-person hands match your character's skin tone.</li></ul><h4>Fixed</h4><ul><li>Clicking Goodbye at the end of a talk no longer punches the person you were talking to.</li><li>Choosing Goodbye with a number key no longer leaves you unable to move.</li></ul>
-            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.2/Worldfall.zip">Worldfall.zip</a> · <a href="https://github.com/s3cond2/worldfall/releases/download/beta-0.9.2/Worldfall_NML.zip">Worldfall_NML.zip</a></p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.1</span><span class="t">Eating</span><span class="d">2026-10-05</span></summary>
-          <div class="ver-body">
-            <p>A small update on the same day as the first beta.</p><h4>New</h4><ul><li><b>Eat.</b> Press <kbd>J</kbd> to eat food your kind likes from your bag, your favorite first, or a meal from your town's stores.</li></ul>
-            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-2026-10-05.2/Worldfall.zip">Worldfall.zip</a></p>
-          </div>
-        </details>
-        <details class="ver">
-          <summary><span class="v">0.9.0</span><span class="t">First public beta</span><span class="d">2026-10-05</span></summary>
-          <div class="ver-body">
-            <p>The first public build of Worldfall.</p><h4>New</h4><ul><li><b>First person in any creature.</b> Select it and press <kbd>G</kbd>, or zoom all the way in from the map. Mouse to look, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move.</li><li><b>The world in 3D.</b> Built live from your map: land, coasts, trees, every people's own towns and the rooms inside their houses.</li><li><b>3D god view.</b> Press <kbd>V</kbd> on the map to see the whole world in 3D under the game's own buttons and powers.</li><li><b>Talk to anyone.</b> Press <kbd>E</kbd> to ask about their work, family, the news and their king, and to take on quests.</li><li><b>Combat.</b> Melee with every weapon, bows, a pump shotgun, and your kind's own ability on <kbd>X</kbd>.</li><li><b>Dragons and Crabzilla.</b> Dragons fly as jointed 3D models. Become Crabzilla and fire its claw lasers.</li><li><b>Ships.</b> Take the helm and sail, or fire a warship's cannons.</li><li><b>Sky and weather.</b> A full day and night, northern lights, comets, meteor showers, storms, wind and rain.</li><li><b>Binoculars, minimap and pings.</b> Hold <kbd>Z</kbd> to look up to 12 times closer. <kbd>N</kbd> shows a minimap with a ping wheel.</li><li><b>GPU renderer.</b> Draws the 3D world on the graphics card for higher frame rates.</li><li><b>Mac support.</b> Runs on Intel and Apple Silicon Macs.</li></ul>
-            <p class="get"><span>Download this older version:</span> <a href="https://github.com/s3cond2/worldfall/releases/download/beta-2026-10-05/Worldfall.zip">Worldfall.zip</a></p>
-          </div>
-        </details>
-      </div>
+      <ul class="cards">
+        <li><a class="card" href="/world/">
+          <div class="shot"><img src="/shots/sea.webp?v=98" alt="Morning sun over the sea from a beach." loading="lazy"></div>
+          <h3>The world</h3>
+          <p>The map in 3D, every biome, day to night.</p>
+        </a></li>
+        <li><a class="card" href="/towns/">
+          <div class="shot"><img src="/shots/home.webp?v=98" alt="Inside a house: a table, a staircase and a lamp." loading="lazy"></div>
+          <h3>Towns and people</h3>
+          <p>Homes, forges, kings' orders, life inside.</p>
+        </a></li>
+        <li><a class="card" href="/war/">
+          <div class="shot"><img src="/shots/dragon_over_town.webp?v=98" alt="A red dragon over a burning town." loading="lazy"></div>
+          <h3>War and chaos</h3>
+          <p>Battles, dragons and the sky falling.</p>
+        </a></li>
+        <li><a class="card" href="/soundtrack/">
+          <div class="shot"><img src="/shots/aurora.webp" alt="An aurora over a lit village at night." loading="lazy"></div>
+          <h3>Soundtrack</h3>
+          <p>16 tracks, free to download.</p>
+        </a></li>
+        <li><a class="card" href="/updates/">
+          <div class="shot"><img src="/shots/next_village.webp" alt="Planning a village by hand in first person." loading="lazy"></div>
+          <h3>Updates</h3>
+          <p>What's new in each version.</p>
+        </a></li>
+        <li><a class="card" href="/modding/">
+          <div class="shot"><img src="/modding/img/game_mods.webp" alt="The Mods window with packs turned on." loading="lazy"></div>
+          <h3>Modding</h3>
+          <p>Your own 3D models, on the Steam Workshop.</p>
+        </a></li>
+      </ul>
     </div>
   </section>
 
@@ -457,7 +109,7 @@ footer p { max-width: 60ch; }
       <div class="head">
         <p class="eyebrow">Beta · work in progress</p>
         <h2>Still being built</h2>
-        <p>Worldfall is in beta: an unfinished version that keeps getting updates with new creatures, places and things to do. Everything on this page is how it looks today. Expect bugs and rough edges, and expect it to keep changing.</p>
+        <p>Worldfall is in beta: an unfinished version that keeps getting updates with new creatures, places and things to do. Everything on this site is how it looks today. Expect bugs and rough edges, and expect it to keep changing.</p>
         <p class="note change">All assets are subject to change: models, pictures, sounds and features may look and work differently in later updates.</p>
         <p class="eyebrow follow-label">Follow along</p>
         <ul class="socials">
@@ -480,347 +132,11 @@ footer p { max-width: 60ch; }
       </div>
     </div>
   </section>
-
-  <section class="band" id="next">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">New since 0.9.5</p>
-        <h2>Homes, forges and kings' orders</h2>
-        <p>All of this is in the current download.</p>
-      </div>
-      <div class="grid">
-        <figure>
-          <div class="shot"><img src="shots/n98_1.webp" alt="Two armies charging across a sandy plain at sunset, palm trees and mountains behind." loading="lazy"></div>
-          <figcaption><h3>War on open ground</h3><p>Armies charge across open ground. Fly a free camera over the battle, or fight in the line.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_2.webp" alt="Inside a timber attic: a table with a lit candle, a rug, a ladder and a wardrobe." loading="lazy"></div>
-          <figcaption><h3>Homes to their size</h3><p>Every house furnished to its size: beds, a hearth, a table and a candle, an upstairs in the bigger ones.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_3.webp" alt="A lamp post at dusk at the edge of a village street, a lit house and a brazier behind it." loading="lazy"></div>
-          <figcaption><h3>Lights you set down</h3><p>Standing and wall torches, lamp posts and braziers, anywhere on land. Towns put up their own.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_4.webp" alt="A village at night from a hillside: lit windows and lamp posts between the houses." loading="lazy"></div>
-          <figcaption><h3>The town after dark</h3><p>Lit windows and lamps along the streets, and the same night on the map as in 3D.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_5.webp" alt="The crafting window: weapon recipes, and a legendary sword named Ashbringer just forged." loading="lazy"></div>
-          <figcaption><h3>Forging</h3><p>A recipe card with the odds of each quality and a forge queue. Legendary pieces come out with their own name.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_6.webp" alt="A mythril hammer glowing cyan in the hand at night, the northern lights over the sea." loading="lazy"></div>
-          <figcaption><h3>Every weapon remodelled</h3><p>All 53 weapons rebuilt in their metals. Mythril and adamantine glow after dark.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_7.webp" alt="The war map's order bar: Transport, Trader and Fishing ship buttons and guards to send." loading="lazy"></div>
-          <figcaption><h3>Kings' orders</h3><p>As king, order ships from your town's card on the war map, and send your guards after anyone.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_8.webp" alt="A fishing boat, a transport and a trading ship under sail, moored in a sunny bay." loading="lazy"></div>
-          <figcaption><h3>Ships from the dock</h3><p>Ordered ships are built at the town's docks: transport, trade and fishing, up to three of each.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/n98_9.webp" alt="A torch held up at night between village houses, a lit window and villagers nearby." loading="lazy"></div>
-          <figcaption><h3>A torch in hand</h3><p>Light it at a fire and hold it out. Rain and water put it out.</p></figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="war">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">New in 0.9.5</p>
-        <h2>War, filmed in the game</h2>
-        <p>Two kingdoms at war on open ground, recorded straight from the game with the mod running: a free-flying camera, the 3D god view, a low pass at golden hour, and first person in the line.</p>
-      </div>
-      <div class="clips">
-        <figure>
-          <video class="clip" src="clips/war_1_flyover.mp4" poster="clips/war_1_flyover.webp" controls muted loop playsinline preload="none" aria-label="Two armies clash on an autumn field by a river, the free camera sweeping over them."></video>
-          <figcaption>A free camera flying over the battle.</figcaption>
-        </figure>
-        <figure>
-          <video class="clip" src="clips/war_2_god_view.mp4" poster="clips/war_2_god_view.webp" controls muted loop playsinline preload="none" aria-label="The battle seen from high above in the 3D god view, the river beside the field."></video>
-          <figcaption>From the 3D god view.</figcaption>
-        </figure>
-        <figure>
-          <video class="clip" src="clips/war_3_low_pass_golden_hour.mp4" poster="clips/war_3_low_pass_golden_hour.webp" controls muted loop playsinline preload="none" aria-label="A low camera passing the battle line through autumn trees at golden hour, fires in the grass."></video>
-          <figcaption>A low pass at golden hour.</figcaption>
-        </figure>
-        <figure>
-          <video class="clip" src="clips/war_4_first_person_melee.mp4" poster="clips/war_4_first_person_melee.webp" controls muted loop playsinline preload="none" aria-label="First person in the melee: soldiers in helmets and armour all round, flames close by."></video>
-          <figcaption>In the line, first person.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="wonders">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Also new in 0.9.5</p>
-        <h2>Wonders, rebuilt</h2>
-        <p>The game's waypoints, spawners, brains and mage towers stand in 3D at one and a half times their sprite's height, with light, motion and their own sounds.</p>
-      </div>
-      <div class="trio">
-        <figure>
-          <div class="shot"><img src="shots/wonder_harp.webp?v=98" alt="A giant golden-stringed harp on a round dais in the snow among pines, by day." loading="lazy"></div>
-          <figcaption>The harp waypoint, calling pilgrims.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/wonder_ice.webp?v=98" alt="The ice tower: a dark stone keep wrapped in tall blue crystals, standing on snow among pines." loading="lazy"></div>
-          <figcaption>The ice tower.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/wonder_pumpkin.webp?v=98" alt="The pumpkin king at night: a giant carved pumpkin with a glowing face on vine legs, a smaller lit pumpkin beside it in the snow." loading="lazy"></div>
-          <figcaption>The pumpkin king, its face lit at night.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="dragons">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Dragons in 3D</p>
-        <h2>Here be dragons</h2>
-        <p>Dragons fly as jointed 3D models with living wings. They cruise over the land, swoop on a town breathing fire, land to burn what's left and sleep it off. Watch from a rooftop, or from the sky in the 3D god view.</p>
-      </div>
-      <div class="mosaic">
-        <figure class="big">
-          <div class="shot"><img src="shots/dragon_breath.webp" alt="A red dragon breathing fire over a half-timbered house at dusk, trees burning beside a river behind it." loading="lazy"></div>
-          <figcaption>Breathing fire over the rooftops at dusk.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/dragon_over_town.webp?v=98" alt="The 3D god view from above: a red dragon with wings spread over a town burning at dusk, the sea to the left." loading="lazy"></div>
-          <figcaption>A dragon over a burning town, in the 3D god view.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/dragon_glide.webp?v=98" alt="A red dragon climbing into a blue evening sky above a windmill and slate roofs." loading="lazy"></div>
-          <figcaption>Climbing over the windmill, late in the day.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="towns">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Every people's own town</p>
-        <h2>Cats on stilts, ghosts that glow</h2>
-        <p>Each of the game's peoples builds its own town in 3D, after its sprites: houses, hall, temple and windmill, down to the ruins they leave. A few of the 49:</p>
-      </div>
-      <div class="trio">
-        <figure>
-          <div class="shot"><img src="shots/town_cat.webp" alt="A cat town on open grass: wooden houses on stilts, a windmill, a bell shrine and a timber hall flying a flag." loading="lazy"></div>
-          <figcaption>Cats: timber on stilts.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/town_ghost.webp" alt="A ghost town of pale, glowing see-through domes and towers, a flag over the hall." loading="lazy"></div>
-          <figcaption>Ghosts: pale domes that glow.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/town_necromancer.webp" alt="A necromancer town: a tall spiked tent flying a flag, round thatched huts, a ribbed tower and a horned arch." loading="lazy"></div>
-          <figcaption>Necromancers: spiked tents and horned arches.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="compare">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Press V on the map</p>
-        <h2>Flat map, or the whole world in 3D</h2>
-        <p>The 3D god view draws your map as the world it is, under the game's own buttons and powers. Drag across the picture: the same village at the same zoom, both straight from the game.</p>
-      </div>
-      <figure style="margin:0">
-        <div class="cmp" id="cmp">
-          <img src="shots/god_day.webp?v=98" alt="A snowy village in the 3D god view: stone and timber houses, a fountain and snowy pines on a point by the sea." loading="lazy">
-          <img class="top" src="shots/map_flat.webp?v=98" alt="The same village on WorldBox's flat map." loading="lazy">
-          <span class="rule"></span>
-          <span class="tag l">Flat map</span><span class="tag r">3D view</span>
-          <input type="range" id="cmp-range" min="0" max="100" value="50" step="0.5" aria-label="Slide between the flat map and the 3D view">
-        </div>
-        <figcaption>Map zoom 26, the same moment. The 3D view fades in below zoom 60 and covers the map from 40 (both set in the F2 menu).</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="band" id="quality">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Graphics settings</p>
-        <h2>Pick your look</h2>
-        <p>The same street at the same moment in each of the looks you can pick in F2, straight from the game. The picture's size runs from 640×360 to 1920×1080, and the Low preset keeps older and laptop graphics smooth.</p>
-      </div>
-      <figure class="looks" id="looks">
-        <div class="looks-tabs" role="tablist" aria-label="Looks">
-          <button type="button" role="tab" aria-selected="true" data-look="painterly">Painterly</button>
-          <button type="button" role="tab" aria-selected="false" data-look="classic">Classic</button>
-          <button type="button" role="tab" aria-selected="false" data-look="dark">Dark fantasy</button>
-          <button type="button" role="tab" aria-selected="false" data-look="low">Low · 640×360</button>
-        </div>
-        <div class="shot looks-stack">
-          <img src="shots/look_painterly.webp" data-look="painterly" data-cap="The default finish: soft light, brushed leaves and shadows." alt="The same village street by day, drawn Painterly." loading="lazy">
-          <img src="shots/look_classic.webp" data-look="classic" data-cap="Flatter blocks of colour, as the CPU renderer draws them." alt="The same village street by day, drawn Classic." hidden loading="lazy">
-          <img src="shots/look_dark.webp" data-look="dark" data-cap="Deeper greens and sharper edges by day; blue fog and glowing water at night." alt="The same village street by day, drawn Dark fantasy." hidden loading="lazy">
-          <img class="pixel" src="shots/look_low.webp" data-look="low" data-cap="The Low preset for older and laptop graphics: no shadows, a shorter view." alt="The same village street by day, drawn at Low quality, 640 by 360." hidden loading="lazy">
-        </div>
-        <figcaption id="looks-cap">The default finish: soft light, brushed leaves and shadows.</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="band" id="chaos">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Disasters, up close</p>
-        <h2>Be there when the sky falls</h2>
-        <p>God powers land in 3D. Become Crabzilla and fire its claw lasers from its own eyes, or watch an atomic bomb's mushroom cloud climb over the sea from a mountainside.</p>
-      </div>
-      <div class="trio">
-        <figure>
-          <div class="shot"><img src="shots/crab.webp?v=98" alt="Crabzilla's red scaled claws in view, a green laser between them burning the forest floor at sunset." loading="lazy"></div>
-          <figcaption>Crabzilla's claw lasers, from its own eyes.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/nuke.webp?v=98" alt="An atomic bomb's mushroom cloud rising into a sunset sky, seen from a hillside." loading="lazy"></div>
-          <figcaption>An atomic bomb across the bay.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/burning.webp" alt="A town burning at dusk, seen from above in the 3D god view." loading="lazy"></div>
-          <figcaption>What the dragon left, from the god view.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="hours">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Day and night</p>
-        <h2>Day, sunset, after dark</h2>
-        <p>The sun crosses the sky over a 20-minute day. Lived-in houses light their windows at night, fires and lava light everything near them, and the northern lights, comets and meteor showers come out over the sea. <kbd>F7</kbd> holds the hour you like.</p>
-      </div>
-      <div class="hours">
-        <div class="stack" id="hours-stack">
-          <img src="shots/camp_day.webp?v=98" alt="Stone houses with blue slate roofs under big trees in a village, in daylight." loading="lazy">
-          <img src="shots/camp_sunset.webp?v=98" alt="The same houses at dusk, warm light on the walls under a violet sky." loading="lazy" style="opacity:0">
-          <img src="shots/camp_night.webp?v=98" alt="The same houses at night, their windows lit and fireflies over the grass." loading="lazy" style="opacity:0">
-        </div>
-        <div class="dial">
-          <input type="range" id="hour" min="0" max="200" value="0" aria-label="Time of day: day, sunset, night">
-          <span class="now" id="h0">Day</span><span id="h1" style="text-align:center">Sunset</span><span id="h2" style="text-align:right">Night</span>
-        </div>
-      </div>
-      <div class="trio sky">
-        <figure>
-          <div class="shot"><img src="shots/lighthouse.webp?v=98" alt="First person on a village street at night: a timber hall with glowing windows, lamp posts lighting the path, an old man sitting on the grass." loading="lazy"></div>
-          <figcaption>Lit windows and lamp posts along a street at night.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/aurora.webp?v=98" alt="Green northern lights over a seaside village at night, lit windows and fireflies below." loading="lazy"></div>
-          <figcaption>The northern lights over the town.</figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/comet.webp" alt="A bright comet with a long tail in a starry night sky." loading="lazy"></div>
-          <figcaption>Some nights a comet hangs over the world.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="inside">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Once you're in</p>
-        <h2>Live their life, or end someone else's</h2>
-        <p>Select any creature and press <kbd>G</kbd>, or zoom all the way in. Everything around you is the live world: the people go about their day, and what you do changes the map.</p>
-      </div>
-      <div class="grid">
-        <figure>
-          <div class="shot"><img src="shots/talk.webp?v=98" alt="Talking to a villager in a village street; the conversation panel lists questions about his family, his life, the news and the king." loading="lazy"></div>
-          <figcaption><h3>Talk to anyone</h3><p>Press <kbd>E</kbd> for a whole conversation: their work, their family, the news, their king.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/home.webp?v=98" alt="Inside a timber house by day: a table with a jug and candle under an iron chandelier, a stair up and sunlight on the walls." loading="lazy"></div>
-          <figcaption><h3>Walk into their homes</h3><p>Every house has a furnished room inside, lit by candles and its windows.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/power.webp?v=98" alt="Holding an evil mage's red-gem staff in a street of stone houses, the ground ablaze after a fireball." loading="lazy"></div>
-          <figcaption><h3>Use your kind's power</h3><p><kbd>X</kbd> throws a bandit's firebomb, raises a necromancer's dead, casts an evil mage's fireball.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/fight.webp?v=98" alt="Fighting in the front line on open sand: a sword in your hand, an armoured knight beside you, enemies ahead." loading="lazy"></div>
-          <figcaption><h3>Fight where it happens</h3><p>Swing at what's under the crosshair, guard and parry, draw a bow. When raiders hit your town, you're standing in it.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/ship.webp?v=98" alt="At a ship's wheel on a river at sunset, the sails above and the shore ahead." loading="lazy"></div>
-          <figcaption><h3>Take the helm</h3><p>Take over a ship and steer her yourself: <kbd>W</kbd>/<kbd>S</kbd> set the sails, <kbd>A</kbd>/<kbd>D</kbd> turn the wheel, <kbd>Shift</kbd> fills the sails with a gust.</p></figcaption>
-        </figure>
-        <figure>
-          <div class="shot"><img src="shots/wolf.webp?v=98" alt="A wolf's low view across a bay to an island of baobab trees, late in the day." loading="lazy"></div>
-          <figcaption><h3>Be anything</h3><p>A wolf, a sheep, a skeleton, Crabzilla. Every creature you can possess, you can see through.</p></figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="horizons">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Draw distance: the whole map</p>
-        <h2>All the way to the far shore</h2>
-        <p>See 270 tiles out, or the whole map (Draw distance in the <kbd>F2</kbd> menu). Far mountains turn blue in the haze and the low sun lays a road of light across the sea.</p>
-      </div>
-      <figure class="wide">
-        <div class="shot"><img src="shots/sea.webp?v=98" alt="Looking out from a beach at golden hour: the low sun over a calm sea, a glittering road of light running in over the clear shallows, and a jungle shore curving away on the right." loading="lazy"></div>
-        <figcaption>A beach at golden hour, the low sun laying a road of light across the sea.</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="band" id="biomes">
-    <div class="wrap">
-      <div class="head">
-        <p class="eyebrow">Every biome</p>
-        <h2>Candy canes to crystal spires</h2>
-        <p>All 22 of WorldBox's biomes have their own ground, trees and plants in 3D, and their own air: mist, embers, petals or sparks in the light. These are from test worlds, a few steps apart.</p>
-      </div>
-      <div class="strip" tabindex="0" aria-label="Biome screenshots, scroll sideways">
-        <figure><div class="shot"><img src="shots/biome_mushroom.webp" alt="Giant red-capped mushrooms on green ground." loading="lazy"></div><figcaption>Mushroom</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_crystal.webp?v=98" alt="Purple crystal trees on cyan ground." loading="lazy"></div><figcaption>Crystal</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_candy.webp" alt="Red and white candy canes on pink ground." loading="lazy"></div><figcaption>Candy</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_celestial.webp" alt="Huge dark celestial trees under violet crowns." loading="lazy"></div><figcaption>Celestial</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_infernal.webp" alt="Black trees with glowing embers on red ground." loading="lazy"></div><figcaption>Infernal</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_permafrost.webp?v=98" alt="Snow-laden pines on frozen ground." loading="lazy"></div><figcaption>Permafrost</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_corrupted.webp?v=98" alt="Dead trees with glowing red eyes on purple ground." loading="lazy"></div><figcaption>Corrupted</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_flower.webp" alt="Giant sunflowers and blooms on bright grass." loading="lazy"></div><figcaption>Flower</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_singularity.webp" alt="Twisted dark spires ringed in pink on violet ground." loading="lazy"></div><figcaption>Singularity</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_savanna.webp?v=98" alt="A baobab and flat-topped acacias on golden grass." loading="lazy"></div><figcaption>Savanna</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_enchanted.webp?v=98" alt="Pink round-crowned trees on green grass." loading="lazy"></div><figcaption>Enchanted</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_garlic.webp" alt="Giant garlic bulbs with drooping leaves." loading="lazy"></div><figcaption>Garlic</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_desert.webp?v=98" alt="Palms and cacti on sand." loading="lazy"></div><figcaption>Desert</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_swamp.webp" alt="Mangroves on stilt roots over dark marsh." loading="lazy"></div><figcaption>Swamp</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_maple.webp" alt="Red and gold maples on orange ground." loading="lazy"></div><figcaption>Maple</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_lemon.webp?v=98" alt="Round lemon trees on yellow-green grass." loading="lazy"></div><figcaption>Lemon</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_jungle.webp" alt="Tall jungle trees hung with vines." loading="lazy"></div><figcaption>Jungle</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_paradox.webp?v=98" alt="Jagged black trees lit with gold on brown ground." loading="lazy"></div><figcaption>Paradox</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_birch.webp" alt="Birches on bright green grass." loading="lazy"></div><figcaption>Birch</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_rocklands.webp" alt="Stony trees on grey rocky ground." loading="lazy"></div><figcaption>Rocklands</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_wasteland.webp" alt="Gnarled dark trees on grey-green wasteland." loading="lazy"></div><figcaption>Wasteland</figcaption></figure>
-        <figure><div class="shot"><img src="shots/biome_clover.webp" alt="Clover stalks on teal ground." loading="lazy"></div><figcaption>Clover</figcaption></figure>
-      </div>
-    </div>
-  </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <p>Worldfall is in beta: a work in progress that keeps getting updates, and all assets are subject to change. It is an unofficial fan mod for WorldBox, which is made by Maxim Karpenko. Every picture on this page was captured in the game with the mod running.</p>
+    <p>Worldfall is in beta: a work in progress that keeps getting updates, and all assets are subject to change. It is an unofficial fan mod for WorldBox, which is made by Maxim Karpenko. Every picture on this site was captured in the game with the mod running.</p>
     <p class="credit">Headings set in Alagard by Hewett Tsoi.</p>
     <nav class="foot-links" aria-label="Worldfall elsewhere">
       <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3814551764" target="_blank" rel="noopener">Steam Workshop</a>
@@ -832,65 +148,6 @@ footer p { max-width: 60ch; }
   </div>
 </footer>
 
-<script>
-(function () {
-  "use strict";
-
-  // ---- flat map / 3D ----
-  Array.prototype.forEach.call(document.querySelectorAll(".cmp"), function (cmp) {
-    var range = cmp.querySelector("input[type=range]");
-    function setCmp() { cmp.style.setProperty("--pos", range.value + "%"); }
-    range.addEventListener("input", setCmp);
-    setCmp();
-  });
-
-  // ---- the hour ----
-  var hour = document.getElementById("hour");
-  var layers = document.querySelectorAll("#hours-stack img");
-  var labels = [document.getElementById("h0"), document.getElementById("h1"), document.getElementById("h2")];
-  function setHour() {
-    var v = hour.value / 100;          // 0 noon .. 1 golden .. 2 night
-    layers[1].style.opacity = Math.min(1, v).toFixed(3);
-    layers[2].style.opacity = Math.max(0, v - 1).toFixed(3);
-    var near = Math.round(v);
-    labels.forEach(function (l, k) { l.classList.toggle("now", k === near); });
-  }
-  hour.addEventListener("input", setHour);
-  setHour();
-
-  // ---- install tabs ----
-  var tabs = [document.getElementById("tab-win"), document.getElementById("tab-mac"), document.getElementById("tab-nml")];
-  var panels = [document.getElementById("steps-win"), document.getElementById("steps-mac"), document.getElementById("steps-nml")];
-  function pick(k) {
-    tabs.forEach(function (t, j) { t.setAttribute("aria-selected", j === k ? "true" : "false"); t.tabIndex = j === k ? 0 : -1; });
-    panels.forEach(function (p, j) { p.hidden = j !== k; });
-  }
-  tabs.forEach(function (t, k) {
-    t.addEventListener("click", function () { pick(k); });
-    t.addEventListener("keydown", function (e) {
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { var j = (k + (e.key === "ArrowRight" ? 1 : 2)) % 3; pick(j); tabs[j].focus(); }
-    });
-  });
-  if (/Mac/.test(navigator.platform || "")) pick(1); else pick(0);
-})();
-  /* ---- looks ---- */
-  (function () {
-    var box = document.getElementById("looks");
-    if (!box) return;
-    var tabs = box.querySelectorAll("[role=tab]"), imgs = box.querySelectorAll(".looks-stack img"), cap = document.getElementById("looks-cap");
-    function pick(k) {
-      Array.prototype.forEach.call(tabs, function (t) { var on = t.getAttribute("data-look") === k; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; });
-      Array.prototype.forEach.call(imgs, function (im) { var on = im.getAttribute("data-look") === k; im.hidden = !on; if (on) { im.loading = "eager"; cap.textContent = im.getAttribute("data-cap"); } });
-    }
-    Array.prototype.forEach.call(tabs, function (t, i) {
-      t.addEventListener("click", function () { pick(t.getAttribute("data-look")); });
-      t.addEventListener("keydown", function (e) {
-        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-        var j = (i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
-        pick(tabs[j].getAttribute("data-look")); tabs[j].focus();
-      });
-    });
-  })();
-</script>
-
+<script src="/assets/site.js" defer></script>
+</body>
 </html>

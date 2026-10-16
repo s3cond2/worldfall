@@ -1,0 +1,120 @@
+{
+ "album": "Worldfall (Original Soundtrack)",
+ "tracks": [
+  {
+   "n": 1,
+   "title": "Meadow",
+   "group": "Day",
+   "file": "audio/01_meadow.mp3",
+   "seconds": 96.6
+  },
+  {
+   "n": 2,
+   "title": "Daydream",
+   "group": "Day",
+   "file": "audio/02_daydream.mp3",
+   "seconds": 101.1
+  },
+  {
+   "n": 3,
+   "title": "Waltz",
+   "group": "Day",
+   "file": "audio/03_waltz.mp3",
+   "seconds": 82.1
+  },
+  {
+   "n": 4,
+   "title": "Hymn",
+   "group": "Day",
+   "file": "audio/04_hymn.mp3",
+   "seconds": 91.3
+  },
+  {
+   "n": 5,
+   "title": "Market",
+   "group": "Town",
+   "file": "audio/05_market.mp3",
+   "seconds": 100.8
+  },
+  {
+   "n": 6,
+   "title": "Jig",
+   "group": "Town",
+   "file": "audio/06_jig.mp3",
+   "seconds": 71.1
+  },
+  {
+   "n": 7,
+   "title": "Hearth",
+   "group": "Town",
+   "file": "audio/07_hearth.mp3",
+   "seconds": 101.6
+  },
+  {
+   "n": 8,
+   "title": "March",
+   "group": "Battle",
+   "file": "audio/08_march.mp3",
+   "seconds": 143.6
+  },
+  {
+   "n": 9,
+   "title": "Clash",
+   "group": "Battle",
+   "file": "audio/09_clash.mp3",
+   "seconds": 136.6
+  },
+  {
+   "n": 10,
+   "title": "Hunt",
+   "group": "Battle",
+   "file": "audio/10_hunt.mp3",
+   "seconds": 130.3
+  },
+  {
+   "n": 11,
+   "title": "Victory",
+   "group": "Battle",
+   "file": "audio/11_victory.mp3",
+   "seconds": 5.2
+  },
+  {
+   "n": 12,
+   "title": "Fallen",
+   "group": "Battle",
+   "file": "audio/12_fallen.mp3",
+   "seconds": 7.0
+  },
+  {
+   "n": 13,
+   "title": "Moonlight",
+   "group": "Night",
+   "file": "audio/13_moonlight.mp3",
+   "seconds": 97.9
+  },
+  {
+   "n": 14,
+   "title": "Lullaby",
+   "group": "Night",
+   "file": "audio/14_lullaby.mp3",
+   "seconds": 97.9
+  },
+  {
+   "n": 15,
+   "title": "Starlight",
+   "group": "Night",
+   "file": "audio/15_starlight.mp3",
+   "seconds": 102.1
+  },
+  {
+   "n": 16,
+   "title": "Nocturne",
+   "group": "Night",
+   "file": "audio/16_nocturne.mp3",
+   "seconds": 90.7
+  }
+ ],
+ "seconds": 1455.9,
+ "zip": "Worldfall_Soundtrack.zip",
+ "zipBytes": 29699335
+}
