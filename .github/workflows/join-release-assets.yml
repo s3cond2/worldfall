@@ -1,0 +1,44 @@
+# Joins release files uploaded in pieces (NAME.part.aa, .ab, ...) into whole files on GitHub's side,
+# checks each against its SHA-256, attaches it to the release, then deletes the pieces.
+# Used when a home connection can't upload a big file to GitHub in one go.
+name: Join release assets
+on:
+  workflow_dispatch:
+    inputs:
+      release_id: { description: "Release id (works for drafts)", required: true }
+      files: { description: "Space-separated list of prefix=name=sha256", required: true }
+permissions:
+  contents: write
+jobs:
+  join:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      RID: ${{ inputs.release_id }}
+      FILES: ${{ inputs.files }}
+    steps:
+      - name: Join, check, attach
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO/releases/$RID/assets?per_page=100" > assets.json
+          for spec in $FILES; do
+            IFS='=' read -r prefix name want <<< "$spec"
+            jq -r --arg p "$prefix.part." '.[] | select(.name|startswith($p)) | "\(.id) \(.name)"' assets.json | sort -k2 > parts.txt
+            test -s parts.txt || { echo "no pieces for $prefix"; exit 1; }
+            : > "$name"
+            while read -r id pname; do
+              echo "fetch $pname"
+              gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$id" > piece
+              cat piece >> "$name"
+            done < parts.txt
+            got=$(sha256sum "$name" | cut -d' ' -f1)
+            echo "$name $got"
+            [ "$got" = "$want" ] || { echo "hash mismatch for $name"; exit 1; }
+            unzip -tq "$name"
+            jq -r --arg n "$name" '.[] | select(.name==$n) | .id' assets.json | while read -r old; do gh api -X DELETE "repos/$REPO/releases/assets/$old"; done
+            curl -sSf -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/zip" \
+              --data-binary @"$name" "https://uploads.github.com/repos/$REPO/releases/$RID/assets?name=$name" | jq -r '"attached \(.name) \(.size) \(.state)"'
+            cut -d' ' -f1 parts.txt | while read -r id; do gh api -X DELETE "repos/$REPO/releases/assets/$id"; done
+            rm -f "$name" piece
+          done
