@@ -212,3 +212,16 @@ td { border-top-color: var(--rule) !important; }
 .looks-tabs button:hover { color: var(--text); box-shadow: var(--frame-thin), 0 0 14px var(--ember-glow); }
 .looks-stack img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
 .looks-stack img.pixel { image-rendering: pixelated; }
+
+/* ---- home hero: the splat logo picture (19 Nov) ---- */
+.page-home .screen .poster { object-position: 50% 30%; }
+.page-home .dive .scrim {
+  background:
+    linear-gradient(to top, rgba(6, 8, 11, 0.85) 0%, rgba(6, 8, 11, 0) 32%) !important;
+}
+@media (max-width: 780px) {
+  .page-home .screen { height: auto; overflow: visible; background: none; }
+  .page-home .screen .poster { position: static; display: block; height: auto; aspect-ratio: 1 / 1; }
+  .page-home .dive .scrim { display: none; }
+  .page-home .dive .intro { position: static; max-width: none; padding: 20px var(--gutter) 8px; }
+}

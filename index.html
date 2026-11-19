@@ -51,12 +51,15 @@
 <main>
   <section class="dive" id="dive" aria-labelledby="title">
     <div class="screen">
-      <img class="poster" src="/shots/hero.webp?v=98" alt="First person in a village by day: stone cottages with blue roofs on the left, an apple bush and villagers on the grass, autumn trees behind." fetchpriority="high">
+      <picture>
+        <source media="(max-width: 780px)" srcset="/shots/hero_splat_square.webp?v=1119">
+        <img class="poster" src="/shots/hero_splat.webp?v=1119" width="2000" height="1137" alt="The Worldfall logo, a red dragon perched on steel letters, over a grassy hill and a crater under a blue sky." fetchpriority="high">
+      </picture>
       <div class="scrim"></div>
 
       <div class="intro">
         <p class="eyebrow">A first-person mod for WorldBox</p>
-        <h1 id="title" class="logo-h1"><img src="/assets/logo/logo_1400.webp" srcset="/assets/logo/logo_900.webp 900w, /assets/logo/logo_1400.webp 1400w" sizes="(max-width: 780px) 82vw, 640px" width="1400" height="581" alt="Worldfall" fetchpriority="high"></h1>
+        <h1 id="title" class="visually-hidden">Worldfall</h1>
         <p class="lede">Zoom in on anyone in your world and keep going, down through the trees and into their eyes.</p>
         <div class="ctas hero-ctas"><a class="btn" href="/install/">Install</a><a class="btn ghost" href="/updates/">What&rsquo;s new</a></div>
       </div>
